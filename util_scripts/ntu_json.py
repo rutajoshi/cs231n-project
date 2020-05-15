@@ -35,7 +35,7 @@ def load_labels(label_csv_path):
     data = pd.read_csv(label_csv_path, delimiter=' ', header=None)
     labels = []
     for i in range(data.shape[0]):
-        labels.append(int(data.iloc[i, 1]))
+        labels.append(data.iloc[i, 1])
     return labels
 
 

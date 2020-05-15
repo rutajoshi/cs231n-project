@@ -33,8 +33,8 @@ def filter_dir(dirname):
 def make_class_index(targetdir):
     # Make classInd.txt
     df = pd.DataFrame({
-        "ActionNames": ACTION_NAMES,
-        "Numbers": list(ACTIONS_TO_KEEP)
+        "Numbers": list(ACTIONS_TO_KEEP),
+        "ActionNames": ACTION_NAMES
     })
     df.to_csv(LABEL_DIR+"classInd.txt", header=None, index=None, sep=' ', mode='a')
 
