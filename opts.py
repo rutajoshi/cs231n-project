@@ -24,13 +24,13 @@ def parse_opts():
         '--dataset',
         default='kinetics',
         type=str,
-        help='Used dataset (activitynet | kinetics | ucf101 | hmdb51)')
+        help='Used dataset (ntu | activitynet | kinetics | ucf101 | hmdb51)')
     parser.add_argument(
         '--n_classes',
         default=400,
         type=int,
         help=
-        'Number of classes (activitynet: 200, kinetics: 400 or 600, ucf101: 101, hmdb51: 51)'
+        'Number of classes (activitynet: 200, kinetics: 400 or 600, ucf101: 101, hmdb51: 51, ntu:9)'
     )
     parser.add_argument('--n_pretrain_classes',
                         default=0,

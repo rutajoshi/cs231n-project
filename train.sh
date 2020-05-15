@@ -1,0 +1,14 @@
+python main.py --root_path ~/data \
+	--video_path nturgb/jpg \
+	--annotation_path ntu_01.json \
+	--result_path results \
+	--dataset ntu \
+	--n_classes 9 \
+	--n_pretrain_classes 1139 \
+	--pretrain_path models/r3d50_KMS_200ep.pth \
+	--ft_begin_module fc \
+	--model resnet \
+	--model_depth 50 \
+	--batch_size 128 \
+	--n_threads 4 \
+	--checkpoint 5
