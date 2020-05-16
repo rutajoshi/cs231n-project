@@ -9,6 +9,10 @@ python main.py --root_path ~/data \
 	--ft_begin_module fc \
 	--model resnet \
 	--model_depth 50 \
-	--batch_size 128 \
+	--batch_size 48 \
 	--n_threads 4 \
-	--checkpoint 5
+	--checkpoint 5 \
+	--inference \
+	--inference_subset val \
+	--n_epochs 400 \
+	--learning_rate 0.005
