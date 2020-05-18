@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split
 
 DATADIRS = []
 DATADIRS.append("/home/ruta/dataset/nturgbd_rgb_s001/nturgbd_rgb/")
+DATADIRS.append("/home/ruta/dataset/nturgbd_rgb_s002/nturgbd_rgb/")
 
 # MAKE THIS DIR before you run the script
 TARGET_DIR = "/home/ruta/data/nturgb/"
