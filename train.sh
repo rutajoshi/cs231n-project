@@ -17,4 +17,5 @@ python main.py --root_path ~/data \
 	--n_epochs 200 \
 	--learning_rate 0.001 \
 	--weight_decay 1e-3 \
-	--momentum 0.95
+	--momentum 0.95 \
+	--lr_scheduler plateau
