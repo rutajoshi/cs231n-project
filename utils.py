@@ -64,14 +64,14 @@ def calc_ytrue_ypred(outputs, targets):
         _, pred = outputs.topk(1, 1, largest=True, sorted=True)
         y_pred = pred.t().tolist()[0]
         y_true = targets.view(1, -1).tolist()[0]
-        print("y_true = " + str(y_true))
-        print("y_pred = " + str(y_pred))
+        #print("y_true = " + str(y_true))
+        #print("y_pred = " + str(y_pred))
         return y_true, y_pred
 
 def calculate_confusion_matrix(all_y_true, all_y_pred):
     with torch.no_grad():
-        print(type(all_y_true))
-        print(all_y_true)
+        #print(type(all_y_true))
+        #print(all_y_true)
         conf_mtx = confusion_matrix(all_y_true, all_y_pred)
         return conf_mtx
 

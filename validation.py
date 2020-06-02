@@ -68,7 +68,7 @@ def val_epoch(epoch,
 
         # Added for 231n
         conf_mtx = calculate_confusion_matrix(all_y_true, all_y_pred)
-        print("conf_mtx = " + str(conf_mtx))
+        #print("conf_mtx = " + str(conf_mtx))
         conf_mtx_dict[epoch] = conf_mtx
 
     if distributed:
