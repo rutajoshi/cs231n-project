@@ -14,7 +14,7 @@ python main.py --root_path ~/tiny_data \
 	--checkpoint 5 \
 	--inference \
 	--inference_subset val \
-	--n_epochs 200 \
+	--n_epochs 10 \
 	--learning_rate 0.001 \
 	--weight_decay 1e-3 \
 	--lr_scheduler plateau

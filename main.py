@@ -31,6 +31,8 @@ from training import train_epoch
 from validation import val_epoch
 import inference
 
+# ADDED for 231n
+import csv
 
 def json_serial(obj):
     if isinstance(obj, Path):
@@ -320,7 +322,7 @@ def compute_saliency_maps(X, y, model):
     Compute a class saliency map using the model for images X and labels y.
 
     Input:
-    - X: Input images; Tensor of shape (N, 3, H, W)
+    - X: Input images; Tensor of shape (N, 3, H, W, T) -- CHECK dataloader shapes
     - y: Labels for X; LongTensor of shape (N,)
     - model: A pretrained CNN that will be used to compute the saliency map.
 
@@ -406,6 +408,8 @@ def main_worker(index, opt):
     else:
         tb_writer = None
 
+    conf_mtx_dict = {} # ADDED for CS231n
+
     prev_val_loss = None
     for i in range(opt.begin_epoch, opt.n_epochs + 1):
         if not opt.no_train:
@@ -424,7 +428,8 @@ def main_worker(index, opt):
         if not opt.no_val:
             prev_val_loss = val_epoch(i, val_loader, model, criterion,
                                       opt.device, val_logger, tb_writer,
-                                      opt.distributed)
+                                      opt.distributed, 
+                                      conf_mtx_dict) # ADDED for CS231n
 
         if not opt.no_train and opt.lr_scheduler == 'multistep':
             scheduler.step()
@@ -440,6 +445,10 @@ def main_worker(index, opt):
                             inference_class_names, opt.inference_no_average,
                             opt.output_topk)
 
+    # ADDED for CS231n
+    conf_mtx_file = csv.writer(open("conf_mtxs.csv", "w+"))
+    for key, val in conf_mtx_dict.items():
+        conf_mtx_file.writerow([key, val])
 
 if __name__ == '__main__':
     opt = get_opt()

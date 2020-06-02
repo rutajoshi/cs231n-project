@@ -5,7 +5,7 @@ import sys
 import torch
 import torch.distributed as dist
 
-from utils import AverageMeter, calculate_accuracy, calculate_precision_and_recall, calculate_confusion_matrix
+from utils import AverageMeter, calculate_accuracy, calc_ytrue_ypred, calculate_confusion_matrix
 
 
 def val_epoch(epoch,
@@ -15,7 +15,8 @@ def val_epoch(epoch,
               device,
               logger,
               tb_writer=None,
-              distributed=False):
+              distributed=False,
+              conf_mtx_dict={}):
     print('validation at epoch {}'.format(epoch))
 
     model.eval()
@@ -26,8 +27,8 @@ def val_epoch(epoch,
     accuracies = AverageMeter()
 
     # Added for 231n
-    precisions = AverageMeter()
-    recalls = AverageMeter()
+    all_y_true = []
+    all_y_pred = []
 
     end_time = time.time()
 
@@ -41,9 +42,9 @@ def val_epoch(epoch,
             acc = calculate_accuracy(outputs, targets)
 
             # Added for 231n
-            prec, recall = calculate_precision_and_recall(outputs, targets)
-            precisions.update(prec, inputs.size(0))
-            recalls.update(recall, inputs.size(0))
+            y_true, y_pred = calc_ytrue_ypred(outputs, targets)
+            all_y_true.extend(y_true)
+            all_y_pred.extend(y_pred)
 
             losses.update(loss.item(), inputs.size(0))
             accuracies.update(acc, inputs.size(0))
@@ -55,18 +56,20 @@ def val_epoch(epoch,
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                   'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
                   'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-                  'Acc {acc.val:.3f} ({acc.avg:.3f})\t'
-                  'Prec {prec.val:3f} ({prec.avg:.3f})\t'
-                  'Recall {recall.val:3f} ({recall.avg:.3f})'.format(
+                  'Acc {acc.val:.3f} ({acc.avg:.3f})'.format(
                       epoch,
                       i + 1,
                       len(data_loader),
                       batch_time=batch_time,
                       data_time=data_time,
                       loss=losses,
-                      acc=accuracies,
-                      prec=precisions,
-                      recall=recalls))
+                      acc=accuracies))
+        
+
+        # Added for 231n
+        conf_mtx = calculate_confusion_matrix(all_y_true, all_y_pred)
+        print("conf_mtx = " + str(conf_mtx))
+        conf_mtx_dict[epoch] = conf_mtx
 
     if distributed:
         loss_sum = torch.tensor([losses.sum],
@@ -91,7 +94,7 @@ def val_epoch(epoch,
         accuracies.avg = acc_sum.item() / acc_count.item()
 
     if logger is not None:
-        logger.log({'epoch': epoch, 'loss': losses.avg, 'acc': accuracies.avg, 'prec': precisions.avg, 'recall': recalls.avg})
+        logger.log({'epoch': epoch, 'loss': losses.avg, 'acc': accuracies.avg})
 
     if tb_writer is not None:
         tb_writer.add_scalar('val/loss', losses.avg, epoch)
