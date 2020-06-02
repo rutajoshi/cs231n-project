@@ -5,7 +5,7 @@ import sys
 import torch
 import torch.distributed as dist
 
-from utils import AverageMeter, calculate_accuracy
+from utils import AverageMeter, calculate_accuracy, calculate_precision_and_recall, calculate_confusion_matrix
 
 
 def val_epoch(epoch,
@@ -25,6 +25,10 @@ def val_epoch(epoch,
     losses = AverageMeter()
     accuracies = AverageMeter()
 
+    # Added for 231n
+    precisions = AverageMeter()
+    recalls = AverageMeter()
+
     end_time = time.time()
 
     with torch.no_grad():
@@ -36,6 +40,11 @@ def val_epoch(epoch,
             loss = criterion(outputs, targets)
             acc = calculate_accuracy(outputs, targets)
 
+            # Added for 231n
+            prec, recall = calculate_precision_and_recall(outputs, targets)
+            precisions.update(prec, inputs.size(0))
+            recalls.update(recall, inputs.size(0))
+
             losses.update(loss.item(), inputs.size(0))
             accuracies.update(acc, inputs.size(0))
 
@@ -46,14 +55,18 @@ def val_epoch(epoch,
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                   'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
                   'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-                  'Acc {acc.val:.3f} ({acc.avg:.3f})'.format(
+                  'Acc {acc.val:.3f} ({acc.avg:.3f})\t'
+                  'Prec {prec.val:3f} ({prec.avg:.3f})\t'
+                  'Recall {recall.val:3f} ({recall.avg:.3f})'.format(
                       epoch,
                       i + 1,
                       len(data_loader),
                       batch_time=batch_time,
                       data_time=data_time,
                       loss=losses,
-                      acc=accuracies))
+                      acc=accuracies,
+                      prec=precisions,
+                      recall=recalls))
 
     if distributed:
         loss_sum = torch.tensor([losses.sum],
@@ -78,7 +91,7 @@ def val_epoch(epoch,
         accuracies.avg = acc_sum.item() / acc_count.item()
 
     if logger is not None:
-        logger.log({'epoch': epoch, 'loss': losses.avg, 'acc': accuracies.avg})
+        logger.log({'epoch': epoch, 'loss': losses.avg, 'acc': accuracies.avg, 'prec': precisions.avg, 'recall': recalls.avg})
 
     if tb_writer is not None:
         tb_writer.add_scalar('val/loss', losses.avg, epoch)

@@ -4,7 +4,7 @@ from functools import partialmethod
 
 import torch
 import numpy as np
-from sklearn.metrics import precision_recall_fscore_support
+from sklearn.metrics import precision_recall_fscore_support, confusion_matrix
 
 
 class AverageMeter(object):
@@ -58,6 +58,18 @@ def calculate_accuracy(outputs, targets):
         n_correct_elems = correct.float().sum().item()
 
         return n_correct_elems / batch_size
+
+
+def calculate_confusion_matrix(outputs, targets):
+    with torch.no_grad():
+        batch_size = targets.size(0)
+
+        _, pred = outputs.topk(1, 1, largest=True, sorted=True)
+        y_pred = pred.t()
+        y_true = targets.view(1, -1)
+
+        conf_mtx = confusion_matrix(y_true, y_pred)
+        return conf_mtx
 
 
 def calculate_precision_and_recall(outputs, targets, pos_label=1):

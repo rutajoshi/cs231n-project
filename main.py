@@ -314,6 +314,36 @@ def save_checkpoint(save_file_path, epoch, arch, model, optimizer, scheduler):
     }
     torch.save(save_states, save_file_path)
 
+def compute_saliency_maps(X, y, model):
+    """
+    This is a function added for 231n.
+    Compute a class saliency map using the model for images X and labels y.
+
+    Input:
+    - X: Input images; Tensor of shape (N, 3, H, W)
+    - y: Labels for X; LongTensor of shape (N,)
+    - model: A pretrained CNN that will be used to compute the saliency map.
+
+    Returns:
+    - saliency: A Tensor of shape (N, H, W) giving the saliency maps for the input
+    images.
+    """
+    # Make sure the model is in "test" mode
+    model.eval()
+
+    # Make input tensors require gradient
+    X.requires_grad()
+
+    saliency = None
+
+    scores = model(X)
+    cc_scores = scores.gather(1, y.view(1, -1)).squeeze()
+    loss = cc_scores.sum()
+    loss.backward()
+    saliency = X.grad()
+    saliency = torch.abs(saliency).max(axis=1)[0]
+
+    return saliency
 
 def main_worker(index, opt):
     random.seed(opt.manual_seed)
