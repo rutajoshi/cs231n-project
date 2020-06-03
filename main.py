@@ -6,7 +6,7 @@ import os
 import numpy as np
 import torch
 from torch.nn import CrossEntropyLoss
-from torch.optim import SGD, lr_scheduler
+from torch.optim import SGD, lr_scheduler, Adam
 import torch.multiprocessing as mp
 import torch.distributed as dist
 from torch.backends import cudnn
@@ -194,12 +194,19 @@ def get_train_utils(opt, model_parameters):
         dampening = 0
     else:
         dampening = opt.dampening
-    optimizer = SGD(model_parameters,
-                    lr=opt.learning_rate,
-                    momentum=opt.momentum,
-                    dampening=dampening,
-                    weight_decay=opt.weight_decay,
-                    nesterov=opt.nesterov)
+    #optimizer = SGD(model_parameters,
+    #                lr=opt.learning_rate,
+    #                momentum=opt.momentum,
+    #                dampening=dampening,
+    #                weight_decay=opt.weight_decay,
+    #                nesterov=opt.nesterov)
+
+    # ADDED for CS231n
+    optimizer = Adam(model_parameters,
+                     lr=opt.learning_rate,
+                     betas=(0.9, 0.999),
+                     eps=1e-08,
+                     weight_decay=opt.weight_decay)
 
     assert opt.lr_scheduler in ['plateau', 'multistep']
     assert not (opt.lr_scheduler == 'plateau' and opt.no_val)

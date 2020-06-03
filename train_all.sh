@@ -5,16 +5,17 @@ python main.py --root_path ~/all_actions_data \
 	--dataset ntu \
 	--n_classes 60 \
 	--n_pretrain_classes 1039 \
-	--pretrain_path models/r3d101_KM_200ep.pth \
+	--pretrain_path models/r3d50_KM_200ep.pth \
 	--ft_begin_module fc \
 	--model resnet \
-	--model_depth 101 \
+	--model_depth 50 \
 	--batch_size 80 \
 	--n_threads 4 \
 	--checkpoint 5 \
 	--inference \
 	--inference_subset val \
-	--n_epochs 200 \
+	--inference_batch_size 20 \
+	--n_epochs 1 \
 	--learning_rate 0.001 \
 	--weight_decay 1e-3 \
 	--momentum 0.95 \

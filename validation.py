@@ -45,6 +45,8 @@ def val_epoch(epoch,
             y_true, y_pred = calc_ytrue_ypred(outputs, targets)
             all_y_true.extend(y_true)
             all_y_pred.extend(y_pred)
+            print(inputs)
+            print(inputs.shape)
 
             losses.update(loss.item(), inputs.size(0))
             accuracies.update(acc, inputs.size(0))
