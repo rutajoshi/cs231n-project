@@ -33,6 +33,11 @@ import inference
 
 # ADDED for 231n
 import csv
+import matplotlib.pyplot as plt
+
+ACTION_NAMES = ["sneezeCough", "staggering", "fallingDown",
+                "headache", "chestPain", "backPain",
+                "neckPain", "nauseaVomiting", "fanSelf"]
 
 def json_serial(obj):
     if isinstance(obj, Path):
@@ -323,7 +328,7 @@ def save_checkpoint(save_file_path, epoch, arch, model, optimizer, scheduler):
     }
     torch.save(save_states, save_file_path)
 
-def compute_saliency_maps(X, y, model):
+def get_saliency_map(X, y, model, opt):
     """
     This is a function added for 231n.
     Compute a class saliency map using the model for single video X and label y.
@@ -341,20 +346,119 @@ def compute_saliency_maps(X, y, model):
     model.eval()
 
     # Make input tensors require gradient
-    X.requires_grad()
+    X.requires_grad_()
     saliency = None
 
-    #scores = model(X).gather(1, y.view(-1, 1)).squeeze().sum()
-    scores = model(X)
-    score_max_index = scores.argmax()
-    score_max = scores[0,score_max_index]
+    # Convert y (targets) into labels
+    labels = []
+    for elem in y:
+        label = int(elem[0].split('_')[0][-2:]) - 41
+        labels.append(label)
 
-    #scores.backward()
-    score_max.backward()
-    
+    y = torch.LongTensor(labels).to(opt.device)
+    scores = model(X).gather(1, y.view(-1, 1)).squeeze().sum()
+    scores.backward()
     saliency, temp = X.grad.data.abs().max(dim = 1)
-
     return saliency
+
+
+def plot_saliency(sal_map, i, inputs, targets):
+    # Use matplotlib to make one figure showing the average image for each segment
+    # for the video and the saliency map for each segment of the video
+
+    # For a video with 5 segments which results in sal_map 5x16x112x112
+    # We avg over the 16 saliency maps (one for each image in the segment) to get 5x112x112
+    # inputs has shape 5x3x16x112x112 --> this is the segment of input images
+    # Avg over 16 images in the segment and take max over 3 channels of each image
+    # Plot each of the 5 images with corresponding heatmap of saliency
+   
+    with torch.no_grad():
+        sal_map = sal_map.numpy()
+        inputs = inputs.detach().numpy()
+        # 1. Average over saliency map dimensions
+        avg_sal_map = np.mean(sal_map, axis=1)
+
+        # 2. Average over image dimensions
+        avg_inputs = np.mean(inputs, axis=2)
+        max_inputs = np.mean(avg_inputs, axis=1)
+
+        # 3. Convert targets into labels
+        labels = []
+        for elem in targets:
+            label = int(elem[0].split('_')[0][-2:]) - 41
+            labels.append(label)
+        y = torch.LongTensor(labels).to(opt.device)
+
+        # 3. Make a plt figure and put the images in their correct positions and save to file
+        N = sal_map.shape[0]
+        for i in range(N):
+            plt.subplot(2, N, i + 1)
+            plt.imshow(max_inputs[i])
+            plt.axis('off')
+            plt.title(ACTION_NAMES[y[i]])
+            plt.subplot(2, N, N + i + 1)
+            plt.imshow(avg_sal_map[i], cmap=plt.cm.hot)
+            plt.axis('off')
+            #plt.gcf().set_size_inches(12, )
+
+        figpath = Path('/home/ruta/tiny_data/saliency/map' + ACTION_NAMES[y[i]])
+        plt.savefig(figpath)
+    return None
+
+
+def compute_saliency_maps(model, opt):
+    # Generate tiny data loader
+    # Loop through it to generate saliency maps
+    assert opt.inference_crop in ['center', 'nocrop']
+
+    normalize = get_normalize_method(opt.mean, opt.std, opt.no_mean_norm,
+                                     opt.no_std_norm)
+
+    spatial_transform = [Resize(opt.sample_size)]
+    if opt.inference_crop == 'center':
+        spatial_transform.append(CenterCrop(opt.sample_size))
+    spatial_transform.append(ToTensor())
+    if opt.input_type == 'flow':
+        spatial_transform.append(PickFirstChannels(n=2))
+    spatial_transform.extend([ScaleValue(opt.value_scale), normalize])
+    spatial_transform = Compose(spatial_transform)
+
+    temporal_transform = []
+    if opt.sample_t_stride > 1:
+        temporal_transform.append(TemporalSubsampling(opt.sample_t_stride))
+    temporal_transform.append(
+        SlidingWindow(opt.sample_duration, opt.inference_stride))
+    temporal_transform = TemporalCompose(temporal_transform)
+
+    tiny_video_path = Path('/home/ruta/tiny_data/nturgb/jpg')
+    tiny_annotation_path = Path('/home/ruta/tiny_data/ntu_01.json')
+    tiny_data, collate_fn = get_inference_data(tiny_video_path, 
+                                               tiny_annotation_path,
+                                               opt.dataset, 
+                                               opt.input_type, 
+                                               opt.file_type,
+                                               opt.inference_subset,
+                                               spatial_transform, 
+                                               temporal_transform)
+
+    tiny_loader = torch.utils.data.DataLoader(tiny_data,
+                                               batch_size=opt.inference_batch_size,
+                                               shuffle=False,
+                                               num_workers=opt.n_threads,
+                                               pin_memory=True,
+                                               sampler=None,
+                                               worker_init_fn=worker_init_fn,
+                                               collate_fn=collate_fn)
+    
+    saliency_maps = []
+    for i, (inputs, targets) in enumerate(tiny_loader):
+        sal_map = get_saliency_map(inputs, targets, model, opt)
+        # Plot the saliency map using matplotlib and save to a file
+        plot_saliency(sal_map, i, inputs, targets)
+        saliency_maps.append(sal_map)
+
+    return saliency_maps
+
 
 def main_worker(index, opt):
     random.seed(opt.manual_seed)
@@ -456,6 +560,7 @@ def main_worker(index, opt):
                             opt.output_topk)
 
     # ADDED for CS231n
+    compute_saliency_maps(model, opt)
     conf_mtx_file = csv.writer(open("conf_mtxs.csv", "w+"))
     for key, val in conf_mtx_dict.items():
         conf_mtx_file.writerow([key, val])
