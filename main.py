@@ -33,6 +33,7 @@ import inference
 
 # ADDED for 231n
 import csv
+from focalloss import FocalLoss
 
 def json_serial(obj):
     if isinstance(obj, Path):
@@ -394,7 +395,9 @@ def main_worker(index, opt):
     if opt.is_master_node:
         print(model)
 
-    criterion = CrossEntropyLoss().to(opt.device)
+    #criterion = CrossEntropyLoss().to(opt.device)
+    # ADDED for 231n
+    criterion = FocalLoss().to(opt.device)
 
     if not opt.no_train:
         (train_loader, train_sampler, train_logger, train_batch_logger,

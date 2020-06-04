@@ -1,0 +1,21 @@
+python main.py --root_path ~/big_data \
+	--video_path nturgb/jpg \
+	--annotation_path ntu_01.json \
+	--result_path results \
+	--dataset ntu \
+	--n_classes 9 \
+	--n_pretrain_classes 60 \
+	--pretrain_path models/ntu50_adam.pth \
+	--ft_begin_module fc \
+	--model resnet \
+	--model_depth 50 \
+	--batch_size 80 \
+	--n_threads 4 \
+	--checkpoint 5 \
+	--inference \
+	--inference_subset val \
+	--n_epochs 200 \
+	--learning_rate 0.001 \
+	--weight_decay 1e-3 \
+	--momentum 0.95 \
+	--lr_scheduler plateau
