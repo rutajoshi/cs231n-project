@@ -5,10 +5,10 @@ python main.py --root_path ~/small_data \
 	--dataset ntu \
 	--n_classes 9 \
 	--n_pretrain_classes 60 \
-	--pretrain_path models/ntu50_adam.pth \
+	--pretrain_path models/ntu101_adam.pth \
 	--ft_begin_module fc \
 	--model resnet \
-	--model_depth 50 \
+	--model_depth 101 \
 	--batch_size 80 \
 	--n_threads 4 \
 	--checkpoint 5 \

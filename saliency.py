@@ -401,7 +401,7 @@ def plot_saliency(sal_map, i, inputs, targets):
             plt.axis('off')
             #plt.gcf().set_size_inches(12, )
 
-        figpath = Path('/home/ruta/tiny_data/saliency/map' + ACTION_NAMES[y[i]])
+        figpath = Path('/home/ruta/teeny_data/saliency_big101/map' + ACTION_NAMES[y[i]])
         plt.savefig(figpath)
     return None
 
@@ -430,8 +430,8 @@ def compute_saliency_maps(model, opt):
         SlidingWindow(opt.sample_duration, opt.inference_stride))
     temporal_transform = TemporalCompose(temporal_transform)
 
-    tiny_video_path = Path('/home/ruta/tiny_data/nturgb/jpg')
-    tiny_annotation_path = Path('/home/ruta/tiny_data/ntu_01.json')
+    tiny_video_path = Path('/home/ruta/teeny_data/nturgb/jpg')
+    tiny_annotation_path = Path('/home/ruta/teeny_data/ntu_01.json')
     tiny_data, collate_fn = get_inference_data(tiny_video_path, 
                                                tiny_annotation_path,
                                                opt.dataset, 

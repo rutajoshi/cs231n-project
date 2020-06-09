@@ -1,10 +1,10 @@
-python saliency.py --root_path ~/tiny_data \
+python saliency.py --root_path ~/teeny_data \
 	--video_path nturgb/jpg \
 	--annotation_path ntu_01.json \
 	--result_path results \
 	--dataset ntu \
 	--n_classes 9 \
-	--resume_path results/km_model.pth \
+	--resume_path models/big101.pth \
 	--model resnet \
 	--model_depth 101 \
 	--batch_size 10 \

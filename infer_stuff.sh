@@ -1,12 +1,10 @@
-python main.py --root_path ~/big_data \
+python main.py --root_path ~/data \
 	--video_path nturgb/jpg \
 	--annotation_path ntu_01.json \
 	--result_path results \
 	--dataset ntu \
 	--n_classes 9 \
-	--n_pretrain_classes 60 \
-	--pretrain_path models/ntu101_adam.pth \
-	--ft_begin_module fc \
+	--resume_path models/km_model.pth \
 	--model resnet \
 	--model_depth 101 \
 	--batch_size 80 \
@@ -14,8 +12,5 @@ python main.py --root_path ~/big_data \
 	--checkpoint 5 \
 	--inference \
 	--inference_subset val \
-	--n_epochs 200 \
-	--learning_rate 0.001 \
-	--weight_decay 1e-3 \
-	--momentum 0.95 \
-	--lr_scheduler plateau
+	--no_train \
+	--no_val 

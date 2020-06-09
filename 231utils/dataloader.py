@@ -5,17 +5,18 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 DATADIRS = []
-DATADIRS.append("/home/ruta/dataset/nturgbd_rgb_s001/nturgbd_rgb/")
-DATADIRS.append("/home/ruta/dataset/nturgbd_rgb_s002/nturgbd_rgb/")
-DATADIRS.append("/home/ruta/dataset/nturgbd_rgb_s004/nturgbd_rgb/")
-DATADIRS.append("/home/ruta/dataset/nturgbd_rgb_s015/nturgbd_rgb/")
+#DATADIRS.append("/home/ruta/dataset/nturgbd_rgb_s001/nturgbd_rgb/")
+#DATADIRS.append("/home/ruta/dataset/nturgbd_rgb_s002/nturgbd_rgb/")
+#DATADIRS.append("/home/ruta/dataset/nturgbd_rgb_s004/nturgbd_rgb/")
+#DATADIRS.append("/home/ruta/dataset/nturgbd_rgb_s015/nturgbd_rgb/")
+DATADIRS.append("/home/ruta/dataset/nturgbd_rgb_s005/nturgbd_rgb/")
 
 #DATADIRS.append("/home/ruta/dataset/nturgbd_rgb_s016/nturgbd_rgb/")
 #DATADIRS.append("/home/ruta/dataset/nturgbd_rgb_s017/nturgbd_rgb/")
 
 # MAKE THIS DIR before you run the script
-TARGET_DIR = "/home/ruta/big_data/nturgb/"
-LABEL_DIR = "/home/ruta/big_ntuTrainTestlist/"
+TARGET_DIR = "/home/ruta/teeny_data/nturgb/"
+LABEL_DIR = "/home/ruta/teeny_ntuTrainTestlist/"
 
 ACTIONS_TO_KEEP = range(41, 50)
 ACTION_NAMES = ["sneezeCough", "staggering", "fallingDown",
@@ -165,9 +166,9 @@ if __name__ == '__main__':
 
 
     # Go through all the DATADIRS and filter them:
-    for datadir in DATADIRS:
-        filter_dir(datadir)
-        print("done filtering: " + datadir)
+    #for datadir in DATADIRS:
+    #    filter_dir(datadir)
+    #    print("done filtering: " + datadir)
 
     # Go through all the DATADIRS and filter them:
     #for datadir in DATADIRS:
