@@ -1,0 +1,19 @@
+python main.py --root_path /share/pi/schul/schul-behavioral/data/3dr_datasets \
+	--video_path mh_video_jpgs/jpg \
+	--annotation_path mh_01.json \
+	--result_path results \
+	--dataset mh \
+	--n_classes 4 \
+	--n_pretrain_classes 1039 \
+	--pretrain_path /home/ruta/pretrained_models/r3d18_KM_200ep.pth \
+	--ft_begin_module fc \
+	--model resnet \
+	--model_depth 50 \
+	--batch_size 10 \
+	--n_threads 4 \
+	--checkpoint 5 \
+	--n_epochs 200 \
+	--learning_rate 0.0005 \
+	--weight_decay 1e-3 \
+	--momentum 0.95 \
+	--lr_scheduler plateau

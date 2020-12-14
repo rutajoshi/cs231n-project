@@ -1,0 +1,18 @@
+python main.py --root_path /share/pi/schul/schul-behavioral/data/3dr_datasets \
+	--video_path mh_video_jpgs/jpg \
+	--annotation_path mh_01.json \
+	--result_path results \
+	--dataset mh \
+	--n_classes 4 \
+	--resume_path results/save_200.pth \
+	--model resnet \
+	--model_depth 50 \
+	--batch_size 10 \
+	--n_threads 4 \
+	--checkpoint 5 \
+	--inference \
+	--inference_subset val \
+	--output_topk 1 \
+	--inference_batch_size 1 \
+	--no_train \
+	--no_val
