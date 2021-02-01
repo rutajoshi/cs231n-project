@@ -98,6 +98,8 @@ if __name__ == '__main__':
     else:
         ext = '.avi'
 
+    print("Hi there")
+
     if args.dataset == 'activitynet':
         video_file_paths = [x for x in sorted(args.dir_path.iterdir())]
         status_list = Parallel(
@@ -110,6 +112,9 @@ if __name__ == '__main__':
         test_set_video_path = args.dir_path / 'test'
         if test_set_video_path.exists():
             class_dir_paths.append(test_set_video_path)
+
+        args.n_jobs = 1
+        print("Starting parallel jobs on: " + str(args.n_jobs) + " threads")
 
         status_list = Parallel(
             n_jobs=args.n_jobs,
