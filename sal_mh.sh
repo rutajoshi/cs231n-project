@@ -1,0 +1,17 @@
+python saliency.py --root_path /Users/ruta/stanford/pac/mentalhealth \
+	--video_path cropped_phi_data/jpg \
+	--annotation_path mh_01.json \
+	--result_path results \
+	--dataset mh \
+	--n_classes 4 \
+	--resume_path results/save_55.pth \
+	--model resnet \
+	--model_depth 152 \
+	--batch_size 2 \
+	--inference_batch_size 1 \
+	--n_threads 1 \
+	--checkpoint 5 \
+	--inference_subset val \
+	--no_train \
+	--no_val \
+  --no_cuda

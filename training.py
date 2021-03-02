@@ -30,6 +30,7 @@ def train_epoch(epoch,
     accuracies = AverageMeter()
 
     end_time = time.time()
+    print("len dataloader = " + str(len(data_loader)))
     for i, (inputs, targets) in enumerate(data_loader):
         data_time.update(time.time() - end_time)
 

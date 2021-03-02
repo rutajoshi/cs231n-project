@@ -104,8 +104,12 @@ class TemporalEvenCrop(object):
 
     def __call__(self, frame_indices):
         n_frames = len(frame_indices)
-        stride = max(
-            1, math.ceil((n_frames - 1 - self.size) / (self.n_samples - 1)))
+        #print("n_frames - 1 - self.size = " + str(n_frames - 1 - self.size))
+        #print("self.n_samples = " + str(self.n_samples))
+        
+        stride = 1
+        if (self.n_samples != 1):
+            stride = max(1, math.ceil((n_frames - 1 - self.size) / (self.n_samples - 1)))
 
         out = []
         for begin_index in frame_indices[::stride]:

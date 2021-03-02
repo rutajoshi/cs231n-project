@@ -2,7 +2,8 @@ from torchvision import get_image_backend
 
 from datasets.videodataset import VideoDataset
 from datasets.videodataset_multiclips import (VideoDatasetMultiClips,
-                                              collate_fn)
+                                              collate_fn,
+                                              custom_collate_fn)
 from datasets.activitynet import ActivityNet
 from datasets.loader import VideoLoader, VideoLoaderHDF5, VideoLoaderFlowHDF5
 
@@ -25,9 +26,14 @@ def get_training_data(video_path,
     assert input_type in ['rgb', 'flow']
     assert file_type in ['jpg', 'hdf5']
 
+    print("input type = " + str(input_type))
+    print("file_type = " + str(file_type))
+
     if file_type == 'jpg':
         assert input_type == 'rgb', 'flow input is supported only when input type is hdf5.'
 
+        print("image backend = " + str(get_image_backend()))
+        print("image name formatter = " + str(image_name_formatter))
         if get_image_backend() == 'accimage':
             from datasets.loader import ImageLoaderAccImage
             loader = VideoLoader(image_name_formatter, ImageLoaderAccImage())
@@ -119,7 +125,8 @@ def get_validation_data(video_path,
             video_loader=loader,
             video_path_formatter=video_path_formatter)
 
-    return validation_data, collate_fn
+    return validation_data, custom_collate_fn # ADDED BY RUTA
+    #return validation_data, collate_fn
 
 
 def get_inference_data(video_path,
@@ -185,4 +192,5 @@ def get_inference_data(video_path,
             video_path_formatter=video_path_formatter,
             target_type=['video_id', 'segment'])
 
-    return inference_data, collate_fn
+    #return inference_data, collate_fn
+    return inference_data, custom_collate_fn # ADDED BY RUTA

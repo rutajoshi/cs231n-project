@@ -7,6 +7,39 @@ from torch.utils.data.dataloader import default_collate
 
 from .videodataset import VideoDataset
 
+# START OF RUTA'S CUSTOM COLLATE
+# Custom collate function for sizing issues in val data (Ruta)
+import numpy as np
+def custom_collate_fn(batch):
+    batch_clips, batch_targets = zip(*batch)
+    
+    batch_clips = [clip for multi_clips in batch_clips for clip in multi_clips]
+    batch_targets = [
+        target for multi_targets in batch_targets for target in multi_targets
+    ]
+
+    maxshape = np.array(batch_clips[0]).shape
+    #print("maxshape = " + str(maxshape))
+    padded_batch_clips = []
+
+    for x in batch_clips:
+        x = np.array(x)
+        if (x.shape != maxshape):
+            #print("x.shape is " + str(x.shape) + " is not the same as " + str(maxshape))
+            if (x.shape[1] < maxshape[1]):
+            	x = np.pad(x, [(0,0), (0,1), (0,0), (0,0)], mode='constant', constant_values=(0))
+            elif (x.shape[1] > maxshape[1]):
+                x = x[::, :maxshape[1], ::, ::]
+            #print("fixed so that x.shape is now = " + str(x.shape))
+        padded_batch_clips.append(x)
+            
+    target_element = batch_targets[0]
+    if isinstance(target_element, int) or isinstance(target_element, str):
+        return default_collate(padded_batch_clips), default_collate(batch_targets)
+    else:
+        return default_collate(padded_batch_clips), batch_targets
+
+# END OF RUTA'S CUSTOM COLLATE
 
 def collate_fn(batch):
     batch_clips, batch_targets = zip(*batch)

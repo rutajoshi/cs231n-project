@@ -34,10 +34,10 @@ def get_fine_tuning_parameters(model, ft_begin_module):
 
 def generate_model(opt):
     assert opt.model in [
-        'resnet', 'resnet2p1d', 'preresnet', 'wideresnet', 'resnext', 'densenet'
+        'resnet', 'resnet2p1d', 'preresnet', 'wideresnet', 'resnext', 'densenet', 'crnn'
     ]
 
-    if opt.model == 'resnet':
+    if opt.model == 'resnet' or opt.model == 'crnn':
         model = resnet.generate_model(model_depth=opt.model_depth,
                                       n_classes=opt.n_classes,
                                       n_input_channels=opt.n_input_channels,
@@ -108,10 +108,21 @@ def load_pretrained_model(model, pretrain_path, model_name, n_finetune_classes):
             tmp_model.fc = nn.Linear(tmp_model.fc.in_features,
                                      n_finetune_classes)
 
-    return model
+        if model_name == 'crnn':
+            fc_hidden1, fc_hidden2 = 512, 512
+            modules = list(model.children())[:-1] # delete the last fc layer.
+            tmp_model.fc1 = nn.Linear(tmp_model.fc.in_features, fc_hidden1)
+            tmp_model.bn1 = nn.BatchNorm1d(fc_hidden1, momentum=0.01)
+            tmp_model.fc2 = nn.Linear(fc_hidden1, fc_hidden2)
+            tmp_model.bn2 = nn.BatchNorm1d(fc_hidden2, momentum=0.01)
+            tmp_model.fc3 = nn.Linear(fc_hidden2, CNN_embed_dim)
+
+    #return model
+    return tmp_model
 
 
 def make_data_parallel(model, is_distributed, device):
+    print("Device type = " + str(device.type))
     if is_distributed:
         if device.type == 'cuda' and device.index is not None:
             torch.cuda.set_device(device)

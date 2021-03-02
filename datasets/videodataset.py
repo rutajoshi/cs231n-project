@@ -49,8 +49,13 @@ class VideoDataset(data.Dataset):
                                        root_path / label / video_id),
                  image_name_formatter=lambda x: f'image_{x:05d}.jpg',
                  target_type='label'):
+        print("root path = " + str(root_path))
+        print("annotation path = " + str(annotation_path))
+
         self.data, self.class_names = self.__make_dataset(
             root_path, annotation_path, subset, video_path_formatter)
+
+        print("class names = " + str(self.class_names))
 
         self.spatial_transform = spatial_transform
         self.temporal_transform = temporal_transform
@@ -91,6 +96,8 @@ class VideoDataset(data.Dataset):
             if not video_path.exists():
                 continue
 
+            print("video path does exist for: " + str(video_path))
+
             segment = annotations[i]['segment']
             if segment[1] == 1:
                 continue
@@ -105,6 +112,9 @@ class VideoDataset(data.Dataset):
             }
             dataset.append(sample)
 
+        print("dataset size = " + str(len(dataset)))
+        # print("dataset = " + str(dataset))
+        print("idx_to_class = " + str(idx_to_class))
         return dataset, idx_to_class
 
     def __loading(self, path, frame_indices):

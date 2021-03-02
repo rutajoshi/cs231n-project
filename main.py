@@ -170,6 +170,10 @@ def get_train_utils(opt, model_parameters):
     train_data = get_training_data(opt.video_path, opt.annotation_path,
                                    opt.dataset, opt.input_type, opt.file_type,
                                    spatial_transform, temporal_transform)
+
+    print("Size of train data = " + str(len(train_data)))
+    print("opt.batch_size = " + str(opt.batch_size))
+
     if opt.distributed:
         train_sampler = torch.utils.data.distributed.DistributedSampler(
             train_data)
@@ -249,6 +253,11 @@ def get_val_utils(opt):
                                                opt.input_type, opt.file_type,
                                                spatial_transform,
                                                temporal_transform)
+    
+    print("Size of val data = " + str(len(val_data)))
+    print("opt.batch_size = " + str(opt.batch_size))
+    print("opt.n_val_samples = " + str(opt.n_val_samples))
+    
     if opt.distributed:
         val_sampler = torch.utils.data.distributed.DistributedSampler(
             val_data, shuffle=False)

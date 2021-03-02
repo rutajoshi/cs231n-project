@@ -1,0 +1,20 @@
+python main.py --root_path /Users/ruta/stanford/pac/mentalhealth \
+	--video_path local_phi_data/jpg \
+	--annotation_path mh_01.json \
+	--result_path results \
+	--dataset mh \
+	--n_classes 4 \
+	--n_pretrain_classes 1039 \
+	--pretrain_path /Users/ruta/stanford/pac/mentalhealth/pretrained/r3d152_KM_200ep.pth \
+	--ft_begin_module fc \
+	--model resnet \
+	--model_depth 152 \
+	--batch_size 10 \
+	--n_threads 4 \
+	--checkpoint 5 \
+	--n_epochs 10 \
+	--learning_rate 0.0005 \
+	--weight_decay 1e-3 \
+	--momentum 0.95 \
+	--lr_scheduler plateau \
+        --no_cuda

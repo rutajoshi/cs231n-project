@@ -35,9 +35,11 @@ import inference
 import csv
 import matplotlib.pyplot as plt
 
-ACTION_NAMES = ["sneezeCough", "staggering", "fallingDown",
-                "headache", "chestPain", "backPain",
-                "neckPain", "nauseaVomiting", "fanSelf"]
+#ACTION_NAMES = ["sneezeCough", "staggering", "fallingDown",
+#                "headache", "chestPain", "backPain",
+#                "neckPain", "nauseaVomiting", "fanSelf"]
+
+ACTION_NAMES = ["minimal", "mildLow", "modMedium", "severeHigh"]
 
 def json_serial(obj):
     if isinstance(obj, Path):
@@ -352,7 +354,8 @@ def get_saliency_map(X, y, model, opt):
     # Convert y (targets) into labels
     labels = []
     for elem in y:
-        label = int(elem[0].split('_')[0][-2:]) - 41
+        #label = int(elem[0].split('_')[0][-2:]) - 41
+        label = int(elem[0].split('_')[2])
         labels.append(label)
 
     y = torch.LongTensor(labels).to(opt.device)
@@ -401,7 +404,8 @@ def plot_saliency(sal_map, i, inputs, targets):
             plt.axis('off')
             #plt.gcf().set_size_inches(12, )
 
-        figpath = Path('/home/ruta/teeny_data/saliency_big101/map' + ACTION_NAMES[y[i]])
+        #figpath = Path('/home/ruta/teeny_data/saliency_big101/map' + ACTION_NAMES[y[i]])
+        figpath = Path('/Users/ruta/stanford/pac/mentalhealth/results/map' + ACTION_NAMES[y[i]])
         plt.savefig(figpath)
     return None
 
@@ -430,8 +434,8 @@ def compute_saliency_maps(model, opt):
         SlidingWindow(opt.sample_duration, opt.inference_stride))
     temporal_transform = TemporalCompose(temporal_transform)
 
-    tiny_video_path = Path('/home/ruta/teeny_data/nturgb/jpg')
-    tiny_annotation_path = Path('/home/ruta/teeny_data/ntu_01.json')
+    tiny_video_path = Path('/Users/ruta/stanford/pac/mentalhealth/cropped_phi_data/jpg') #Path('/home/ruta/teeny_data/nturgb/jpg')
+    tiny_annotation_path = Path('/Users/ruta/stanford/pac/mentalhealth/mh_01.json') #Path('/home/ruta/teeny_data/ntu_01.json')
     tiny_data, collate_fn = get_inference_data(tiny_video_path, 
                                                tiny_annotation_path,
                                                opt.dataset, 
