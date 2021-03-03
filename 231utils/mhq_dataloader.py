@@ -18,7 +18,7 @@ ACTIONS_TO_KEEP = range(4)
 # 15+ = severe/high risk
 ACTION_NAMES = ["minimal", "mildLow", "modMedium", "severeHigh"]
 
-LABELS_CSV = ""
+LABELS_CSV = "/Users/ruta/stanford/pac/mentalhealth/split_csvs"
 
 # Copy files to target directory into the right directory structure given the class
 def organize_files_by_class(dirname):
@@ -52,6 +52,33 @@ def make_class_index(targetdir):
         "ActionNames": ACTION_NAMES
     })
     df.to_csv(LABEL_DIR+"/"+"classInd.txt", header=None, index=None, sep=' ', mode='a')
+
+# Make X and Y given the directory structure includes question splits
+def make_XY_questions(targetdir):
+    X, y = [], []
+    for classname in os.listdir(targetdir):
+        class_dir = targetdir + "/" + classname + "/"
+        for foldername in os.listdir(class_dir):
+            zoom, patientID, actionID = foldername.split("_")
+            actionID, ext = actionID.split(".")
+            action_num = int(actionID)
+
+            video_dir = class_dir + "/" + foldername + "/"
+            for filename in os.listdir(video_dir):
+                y.append(action_num)
+                X.append(classname + "/" + foldername + "/" + filename)
+    return X, y
+
+# Get train/val/test splits from the csvs
+def get_splits(X, y):
+    # Make trainlist
+    train_csv = LABELS_CSV + "/" + "questionnaire_data_clean_train.csv" 
+
+    # Make vallist
+    val_csv = LABELS_CSV + "/" + "questionnaire_data_clean_val.csv"
+
+    # Make testlist
+    test_csv = LABELS_CSV + "/" + "questionnaire_data_clean_test.csv"
 
 
 # Make X and Y for train test splitting
