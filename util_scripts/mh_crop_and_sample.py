@@ -16,13 +16,29 @@ def crop_and_sample(video_file_path, dst_root_path, keepframes=64):
 
     for question_folder in sorted(video_file_path.iterdir()):
         question_folder_path = video_file_path + "/" + question_folder
-        num_frames = len(question_folder_path.iterdir())
+        all_frames = sorted(question_folder_path.iterdir())
+        num_frames = len(all_frames)
+        ctr = 0
         if (num_frames < keepframes):
             # Duplicate the last frame until you've copied 64 frames to the target directory
-            print("y")
+            for frame_file in all_frames:
+                frame = LOAD THE IMAGE FRAME
+                cropped_frame = CROP THE FRAME
+                STORE THE FRAME as img + ctr + .jpg
+                ctr += 1
+            last_frame = CROP THE LAST THING IN all_frames
+            for i in range(keepframes - num_frames):
+                STORE THE last_frame
+                ctr += 1
+             
         else:
             # Copy every nth file (n = num_frames / keepframes) to the target directory
-            print("x")
+            jump = num_frames // keepframes
+            for i in range(0, num_frames, jump):
+                frame = LOAD THE IMAGE FRAME
+                cropped_frame = CROP THE FRAME
+                STORE THE FRAME
+                ctr += 1
 
 def video_process(video_file_path, dst_root_path, ext, fps=-1, size=240):
     if ext != video_file_path.suffix:
