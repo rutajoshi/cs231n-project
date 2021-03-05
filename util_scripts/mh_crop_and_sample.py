@@ -1,6 +1,7 @@
 import subprocess
 import argparse
 from pathlib import Path
+from PIL import Image
 
 from joblib import Parallel, delayed
 
@@ -12,7 +13,6 @@ def crop_and_sample(video_file_path, dst_root_path, keepframes=64):
     # If more than 64 frames, divide num_frames / 64 and sample until you have 64
     # For each frame in the loop that you will save, run face detection on it and crop
     # Save the cropped sampled frame to the dst_root_path / video_name folder
-    print("y")
 
     for question_folder in sorted(video_file_path.iterdir()):
         question_folder_path = video_file_path + "/" + question_folder
@@ -22,9 +22,14 @@ def crop_and_sample(video_file_path, dst_root_path, keepframes=64):
         if (num_frames < keepframes):
             # Duplicate the last frame until you've copied 64 frames to the target directory
             for frame_file in all_frames:
-                frame = LOAD THE IMAGE FRAME
-                cropped_frame = CROP THE FRAME
-                STORE THE FRAME as img + ctr + .jpg
+                frame = Image.open(question_folder_path + "/" + frame_file) #LOAD THE IMAGE FRAME
+                face_locations = face_recognition.face_locations(image) #FIND ALL FACES
+                if (len(face_locations) == 0):
+                   continue
+                top, right, bottom, left = face_locations[0]
+
+                cropped_frame = frame.crop((left, top, right, bottom)) #CROP THE FRAME USING ONLY FIRST FACE
+                cropped_frame.save(dst_img_path + "/" + "img" + str(ctr) + ".jpg") #STORE THE FRAME as img + ctr + .jpg
                 ctr += 1
             last_frame = CROP THE LAST THING IN all_frames
             for i in range(keepframes - num_frames):
@@ -35,9 +40,14 @@ def crop_and_sample(video_file_path, dst_root_path, keepframes=64):
             # Copy every nth file (n = num_frames / keepframes) to the target directory
             jump = num_frames // keepframes
             for i in range(0, num_frames, jump):
-                frame = LOAD THE IMAGE FRAME
-                cropped_frame = CROP THE FRAME
-                STORE THE FRAME
+                frame = Image.open(question_folder_path + "/" + frame_file) #LOAD THE IMAGE FRAME
+                face_locations = face_recognition.face_locations(image) #FIND ALL FACES
+                if (len(face_locations) == 0):
+                   continue
+                top, right, bottom, left = face_locations[0]
+
+                cropped_frame = frame.crop((left, top, right, bottom)) #CROP THE FRAME USING ONLY FIRST FACE
+                cropped_frame.save(dst_img_path + "/" + "img" + str(ctr) + ".jpg") #STORE THE FRAME as img + ctr + .jpg
                 ctr += 1
 
 def video_process(video_file_path, dst_root_path, ext, fps=-1, size=240):
