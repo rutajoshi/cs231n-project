@@ -14,26 +14,38 @@ def crop_and_sample(video_file_path, dst_root_path, keepframes=64):
     # For each frame in the loop that you will save, run face detection on it and crop
     # Save the cropped sampled frame to the dst_root_path / video_name folder
 
+    name = video_file_path.stem
+    dst_dir_path = dst_root_path / name
+    dst_dir_path.mkdir(exist_ok=True)   
+
+    ctr = 0 # For each video, we start from 0 and count upwards through all 11 questions
+ 
     for question_folder in sorted(video_file_path.iterdir()):
         question_folder_path = video_file_path + "/" + question_folder
         all_frames = sorted(question_folder_path.iterdir())
         num_frames = len(all_frames)
-        ctr = 0
         if (num_frames < keepframes):
             # Duplicate the last frame until you've copied 64 frames to the target directory
             for frame_file in all_frames:
                 frame = Image.open(question_folder_path + "/" + frame_file) #LOAD THE IMAGE FRAME
-                face_locations = face_recognition.face_locations(image) #FIND ALL FACES
+                face_locations = face_recognition.face_locations(frame) #FIND ALL FACES
                 if (len(face_locations) == 0):
                    continue
                 top, right, bottom, left = face_locations[0]
 
                 cropped_frame = frame.crop((left, top, right, bottom)) #CROP THE FRAME USING ONLY FIRST FACE
-                cropped_frame.save(dst_img_path + "/" + "img" + str(ctr) + ".jpg") #STORE THE FRAME as img + ctr + .jpg
+                cropped_frame.save(dst_dir_path + "/" + "img" + str(ctr) + ".jpg") #STORE THE FRAME as img + ctr + .jpg
                 ctr += 1
-            last_frame = CROP THE LAST THING IN all_frames
+
+            last_frame = all_frames[-1] #CROP THE LAST THING IN all_frames
+            last_frame_locations = face_recognition.face_locations(last_frame)
+            cropped_last_frame = last_frame
+            if (len(last_frame_locations) != 0):
+                top, right, bottom, left = last_frame_locations[0]
+                cropped_last_frame = last_frame.crop((top, right, bottom, left))
+            
             for i in range(keepframes - num_frames):
-                STORE THE last_frame
+                cropped_last_frame.save(dst_dir_path + "/" + "img" + str(ctr) + ".jpg") #STORE THE last_frame
                 ctr += 1
              
         else:
@@ -41,7 +53,7 @@ def crop_and_sample(video_file_path, dst_root_path, keepframes=64):
             jump = num_frames // keepframes
             for i in range(0, num_frames, jump):
                 frame = Image.open(question_folder_path + "/" + frame_file) #LOAD THE IMAGE FRAME
-                face_locations = face_recognition.face_locations(image) #FIND ALL FACES
+                face_locations = face_recognition.face_locations(frame) #FIND ALL FACES
                 if (len(face_locations) == 0):
                    continue
                 top, right, bottom, left = face_locations[0]
@@ -50,57 +62,7 @@ def crop_and_sample(video_file_path, dst_root_path, keepframes=64):
                 cropped_frame.save(dst_img_path + "/" + "img" + str(ctr) + ".jpg") #STORE THE FRAME as img + ctr + .jpg
                 ctr += 1
 
-def video_process(video_file_path, dst_root_path, ext, fps=-1, size=240):
-    if ext != video_file_path.suffix:
-        return
-
-    ffprobe_cmd = ('ffprobe -v error -select_streams v:0 '
-                   '-of default=noprint_wrappers=1:nokey=1 -show_entries '
-                   'stream=width,height,avg_frame_rate,duration').split()
-    ffprobe_cmd.append(str(video_file_path))
-
-    #p = subprocess.run(ffprobe_cmd, capture_output=True)
-    p = subprocess.run(ffprobe_cmd, stdout=PIPE, stderr=PIPE) #added by Ruta
-
-    res = p.stdout.decode('utf-8').splitlines()
-    if len(res) < 4:
-        return
-
-    frame_rate = [float(r) for r in res[2].split('/')]
-    frame_rate = frame_rate[0] / frame_rate[1]
-    duration = float(res[3])
-    n_frames = int(frame_rate * duration)
-
-    name = video_file_path.stem
-    dst_dir_path = dst_root_path / name
-    dst_dir_path.mkdir(exist_ok=True)
-    n_exist_frames = len([
-        x for x in dst_dir_path.iterdir()
-        if x.suffix == '.jpg' and x.name[0] != '.'
-    ])
-
-    if n_exist_frames >= n_frames:
-        return
-
-    width = int(res[0])
-    height = int(res[1])
-
-    if width > height:
-        vf_param = 'scale=-1:{}'.format(size)
-    else:
-        vf_param = 'scale={}:-1'.format(size)
-
-    if fps > 0:
-        vf_param += ',minterpolate={}'.format(fps)
-
-    ffmpeg_cmd = ['ffmpeg', '-i', str(video_file_path), '-vf', vf_param]
-    ffmpeg_cmd += ['-threads', '1', '{}/image_%05d.jpg'.format(dst_dir_path)]
-    print(ffmpeg_cmd)
-    subprocess.run(ffmpeg_cmd)
-    print('\n')
-
-
-def class_process(class_dir_path, dst_root_path, ext, fps=-1, size=240):
+def class_jpg_process(class_dir_path, dst_root_path):
     if not class_dir_path.is_dir():
         return
 
@@ -109,16 +71,7 @@ def class_process(class_dir_path, dst_root_path, ext, fps=-1, size=240):
 
     # For each question, make a folder and process the video
     for video_file_path in sorted(class_dir_path.iterdir()):
-        # Make a directory for the questions of this video set
-        video_dst_dir_path = dst_class_path / video_file_path.stem
-        video_dst_dir_path.mkdir(exist_ok=True)
-        # Go through all 11 questions and process their videos
-        for question_file_path in sorted(video_file_path.iterdir()):
-            video_process(question_file_path, video_dst_dir_path, ext, fps, size)
-
-    #for video_file_path in sorted(class_dir_path.iterdir()):
-    #    video_process(video_file_path, dst_class_path, ext, fps, size)
-
+        crop_and_sample(video_file_path, dst_class_path, keepframes=64)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -171,6 +124,6 @@ if __name__ == '__main__':
 
         status_list = Parallel(
             n_jobs=args.n_jobs,
-            backend='threading')(delayed(class_process)(
+            backend='threading')(delayed(class_jpg_process)(
                 class_dir_path, args.dst_path, ext, args.fps, args.size)
                                  for class_dir_path in class_dir_paths)
