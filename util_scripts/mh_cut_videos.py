@@ -19,7 +19,11 @@ def cut_video(video_file_path, dst_root_path, annotations_path):
     dst_dir_path.mkdir(exist_ok=True)
 
     video_num = int(name.split("_")[1])
+    if (video_num == 2):
+        return # Video 2 has no audio, so we won't use it.
     annotations_file = "audio_only_" + str(video_num) + ".json"
+    if (video_num < 34):
+        annotations_file = "inperson_" + str(video_num) + ".json"
     f = open(str(annotations_path) + "/" + annotations_file,)
     annotations = json.load(f)
 

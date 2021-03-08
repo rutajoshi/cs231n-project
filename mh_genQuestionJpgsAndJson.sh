@@ -1,11 +1,11 @@
-RAW_VIDEO_DIR_PATH=/Users/ruta/stanford/pac/mentalhealth/local_phi_data/
-VIDEO_DIR_PATH=/Users/ruta/stanford/pac/mentalhealth/question_clipped/
-JPG_DIR_PATH=/Users/ruta/stanford/pac/mentalhealth/question_jpgs/
-CSV_DIR_PATH=/Users/ruta/stanford/pac/mentalhealth/mhq_local_labels/
-DEST_JSON_PATH=/Users/ruta/stanford/pac/mentalhealth/question_clipped/
-CROPS_DIR_PATH=/Users/ruta/stanford/pac/mentalhealth/question_cropsampled/
-ANN_PATH=/Users/ruta/stanford/pac/mentalhealth/local_annotations/
-CUT_TARGET_DIR=/Users/ruta/stanford/pac/mentalhealth/mhq_local_targets/
+RAW_VIDEO_DIR_PATH=/home/ubuntu/data/video/
+VIDEO_DIR_PATH=/home/ubuntu/data/processed_video/question_cut_videos/
+JPG_DIR_PATH=/home/ubuntu/data/processed_video/question_jpgs/
+CSV_DIR_PATH=/home/ubuntu/data/processed_video/mhq_local_labels/
+DEST_JSON_PATH=/home/ubuntu/data/processed_video/question_cut_videos/
+CROPS_DIR_PATH=/home/ubuntu/data/processed_video/question_cropsampled/
+ANN_PATH=/home/ubuntu/data/annotation_questions_labeled/
+CUT_TARGET_DIR=/home/ubuntu/data/processed_video/mhq_local_targets/
 
 python -m util_scripts.mh_cut_videos $RAW_VIDEO_DIR_PATH $CUT_TARGET_DIR $ANN_PATH mh
 #python -m util_scripts.mh_generate_question_video_jpgs $VIDEO_DIR_PATH $JPG_DIR_PATH mh
