@@ -47,7 +47,8 @@ class VideoDataset(data.Dataset):
                  video_loader=None,
                  video_path_formatter=(lambda root_path, label, video_id:
                                        root_path / label / video_id),
-                 image_name_formatter=lambda x: f'image_{x:05d}.jpg',
+                 #image_name_formatter=lambda x: f'image_{x:05d}.jpg',
+                 image_name_formatter=lambda x: f'img{x:05d}.jpg',
                  target_type='label'):
         print("root path = " + str(root_path))
         print("annotation path = " + str(annotation_path))
@@ -100,6 +101,7 @@ class VideoDataset(data.Dataset):
 
             segment = annotations[i]['segment']
             if segment[1] == 1:
+                print("Segment is " + str(segment))
                 continue
 
             frame_indices = list(range(segment[0], segment[1]))
@@ -137,6 +139,8 @@ class VideoDataset(data.Dataset):
         if self.temporal_transform is not None:
             frame_indices = self.temporal_transform(frame_indices)
 
+        print("path = " + str(path))
+        print("frame_indices = " + str(frame_indices))
         clip = self.__loading(path, frame_indices)
 
         if self.target_transform is not None:

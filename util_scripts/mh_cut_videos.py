@@ -2,6 +2,7 @@ import subprocess
 import argparse
 from pathlib import Path
 import json
+import os
 
 from joblib import Parallel, delayed
 
@@ -18,24 +19,41 @@ def cut_video(video_file_path, dst_root_path, annotations_path):
     dst_dir_path = dst_root_path / name
     dst_dir_path.mkdir(exist_ok=True)
 
+    if ("q11.mp4" in os.listdir(dst_dir_path)):
+        return
+    #if (len(os.listdir(dst_dir_path)) >= 11):
+    #    # This video is done already
+    #    return
+
     video_num = int(name.split("_")[1])
     if (video_num == 2):
         return # Video 2 has no audio, so we won't use it.
     annotations_file = "audio_only_" + str(video_num) + ".json"
     if (video_num < 34):
         annotations_file = "inperson_" + str(video_num) + ".json"
+
+    if (video_num in [103, 104, 42, 60, 65, 74, 79, 78]):
+        annotations_file = "audio_only_" + str(video_num) + "_fixed.json"
+    print("Using annotations file: " + str(annotations_file) + " for video " + str(name))
     f = open(str(annotations_path) + "/" + annotations_file,)
     annotations = json.load(f)
 
-    if (len(annotations) < 23):
-        print("Only " + str(len(annotations)) + " objects in json file: " + str(annotations_file))
-        return
+    #if (len(annotations) < 22):
+    #    print("Only " + str(len(annotations)) + " objects in json file: " + str(annotations_file))
+    #    return
 
-    for i in range(11):
+    question_num = -1
+    i = 0
+    while (question_num != 11):
         question = annotations[i*2]
         answer = annotations[i*2 + 1]
         assert(question["data"]["who"] == "interviewer")
         assert(answer["data"]["who"] == "participant")
+
+        if ("info" in answer["data"] and answer["data"]["info"] == "nonanswer"):
+            i += 1
+            continue
+
         start_time = question["start"]
         end_time = answer["end"]
         question_num = answer["data"]["question"]
@@ -48,6 +66,11 @@ def cut_video(video_file_path, dst_root_path, annotations_path):
         with VideoFileClip(str(video_file_path)) as video:
             clip = video.subclip(start_time, end_time)
             clip.write_videofile(str(question_file_path), audio_codec='aac')
+
+        if (question_num == 9 and video_num in [59, 78]):
+            break
+
+        i += 1
 
     f.close()
     print("Finished cutting video: " + str(name))

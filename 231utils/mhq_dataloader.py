@@ -3,13 +3,14 @@ import shutil
 import numpy
 import pandas as pd
 from sklearn.model_selection import train_test_split
+import csv
 
 DATADIRS = []
 DATADIRS.append("/share/pi/schul/schul-behavioral/data/ai-behavioral-health-mp4/")
 
 # MAKE THIS DIR before you run the script
-TARGET_DIR = "/Users/ruta/stanford/pac/mentalhealth/mhq_local_targets"
-LABEL_DIR = "/Users/ruta/stanford/pac/mentalhealth/mhq_local_labels"
+TARGET_DIR = '/home/ubuntu/data/processed_video/question_cropsampled' #"/Users/ruta/stanford/pac/mentalhealth/mhq_local_targets"
+LABEL_DIR = '/home/ubuntu/data/processed_video/mhq_local_labels' #"/Users/ruta/stanford/pac/mentalhealth/mhq_local_labels"
 
 ACTIONS_TO_KEEP = range(4)
 # 0-4 = minimal risk
@@ -18,7 +19,7 @@ ACTIONS_TO_KEEP = range(4)
 # 15+ = severe/high risk
 ACTION_NAMES = ["minimal", "mildLow", "modMedium", "severeHigh"]
 
-LABELS_CSV = "/Users/ruta/stanford/pac/mentalhealth/split_csvs"
+LABELS_CSV = '/home/ubuntu/data/processed_video/split_csvs' #"/Users/ruta/stanford/pac/mentalhealth/split_csvs"
 
 # Copy files to target directory into the right directory structure given the class
 def organize_files_by_class(dirname):
@@ -69,16 +70,51 @@ def make_XY_questions(targetdir):
                 X.append(classname + "/" + foldername + "/" + filename)
     return X, y
 
+def make_txtfile(csvfilename, txtfilename):
+    with open(csvfilename, "r") as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        line_count = 0
+        X_section, y_section = [], []
+        for row in csv_reader:
+            if (line_count != 0):
+                video_num, class_num = int(row[0]), int(row[-1])
+                if (video_num == 2): # No audio to annotate
+                    line_count += 1
+                    continue
+
+                classname = ACTION_NAMES[class_num] 
+                filename = "zoom_" + str(video_num) + ".mp4"
+                if (video_num < 34):
+                    filename = "inperson_" + str(video_num) + ".mkv"
+                filepath = classname + "/" + filename
+                
+                X_section.append(filepath)
+                y_section.append(class_num)
+            line_count += 1
+        data_df = pd.DataFrame({
+            "filename": X_section,
+            "label": y_section
+        })
+        data_df = data_df.sort_values(by=['label'])
+        data_df.to_csv(LABEL_DIR+"/"+txtfilename, header=None, index=None, sep=' ', mode='a')
+
+
 # Get train/val/test splits from the csvs
-def get_splits(X, y):
+def get_splits():
     # Make trainlist
     train_csv = LABELS_CSV + "/" + "questionnaire_data_clean_train.csv" 
-
     # Make vallist
     val_csv = LABELS_CSV + "/" + "questionnaire_data_clean_val.csv"
-
     # Make testlist
     test_csv = LABELS_CSV + "/" + "questionnaire_data_clean_test.csv"
+
+    # For each csv, read it line by line
+    # For each line, you get a video number and a label number
+    # Write a line to the dataframe for each line
+    # When done, write to txt file
+    make_txtfile(train_csv, "trainlist01.txt")
+    make_txtfile(val_csv, "vallist01.txt")
+    make_txtfile(test_csv, "testlist01.txt")
 
 
 # Make X and Y for train test splitting
@@ -124,9 +160,12 @@ if __name__ == '__main__':
 
     make_class_index(TARGET_DIR)
     print("made class index")
+
+    get_splits()
+    print("made train, val, and test lists")
     
-    X, y = make_XY(TARGET_DIR)
-    print("made X and y")
+    #X, y = make_XY(TARGET_DIR)
+    #print("made X and y")
     
-    make_train_test_lists(X, y, test_size=0.2)
-    print("finished splitting")
+    #make_train_test_lists(X, y, test_size=0.2)
+    #print("finished splitting")
