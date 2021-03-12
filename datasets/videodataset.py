@@ -47,22 +47,23 @@ class VideoDataset(data.Dataset):
                  video_loader=None,
                  video_path_formatter=(lambda root_path, label, video_id:
                                        root_path / label / video_id),
-                 #image_name_formatter=lambda x: f'image_{x:05d}.jpg',
-                 image_name_formatter=lambda x: f'img{x:05d}.jpg',
+                 image_name_formatter=lambda x: f'image_{x:05d}.jpg',
+                 #image_name_formatter=lambda x: f'img{x:05d}.jpg',
                  target_type='label'):
-        print("root path = " + str(root_path))
-        print("annotation path = " + str(annotation_path))
+        #print("root path = " + str(root_path))
+        #print("annotation path = " + str(annotation_path))
 
         self.data, self.class_names = self.__make_dataset(
             root_path, annotation_path, subset, video_path_formatter)
 
-        print("class names = " + str(self.class_names))
+        #print("class names = " + str(self.class_names))
 
         self.spatial_transform = spatial_transform
         self.temporal_transform = temporal_transform
         self.target_transform = target_transform
 
         if video_loader is None:
+            print("VIDEO LOADER IS NONE")
             self.loader = VideoLoader(image_name_formatter)
         else:
             self.loader = video_loader
@@ -97,7 +98,7 @@ class VideoDataset(data.Dataset):
             if not video_path.exists():
                 continue
 
-            print("video path does exist for: " + str(video_path))
+            #print("video path does exist for: " + str(video_path))
 
             segment = annotations[i]['segment']
             if segment[1] == 1:
@@ -121,6 +122,9 @@ class VideoDataset(data.Dataset):
 
     def __loading(self, path, frame_indices):
         clip = self.loader(path, frame_indices)
+        if (len(clip) == 0):
+            print("path = " + str(path))
+            print("clip = " + str(clip))
         if self.spatial_transform is not None:
             self.spatial_transform.randomize_parameters()
             clip = [self.spatial_transform(img) for img in clip]

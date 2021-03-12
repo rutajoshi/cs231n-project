@@ -8,6 +8,8 @@ from joblib import Parallel, delayed
 
 from subprocess import PIPE #added by Ruta
 
+image_name_formatter=lambda x: f'image_{x:05d}.jpg'
+
 def crop_and_sample(video_file_path, dst_root_path, keepframes=32):
     # For every question folder, figure out how many frames there are
     # If less than 32 frames, pad to 32
@@ -38,7 +40,8 @@ def crop_and_sample(video_file_path, dst_root_path, keepframes=32):
                     continue
                 top, right, bottom, left = face_locations[0]
                 cropped_frame = frame_pil.crop((left, top, right, bottom)) #CROP THE FRAME USING ONLY FIRST FACE
-                cropped_frame.save(str(dst_dir_path) + "/" + "img" + str(ctr) + ".jpg") #STORE THE FRAME as img + ctr + .jpg
+                frame_name = image_name_formatter(ctr)
+                cropped_frame.save(str(dst_dir_path) + "/" + frame_name) #STORE THE FRAME as img + ctr + .jpg
                 last_face_seen = cropped_frame
                 ctr += 1
 
@@ -46,22 +49,10 @@ def crop_and_sample(video_file_path, dst_root_path, keepframes=32):
                 assert(last_face_seen is not None)
                 padding = keepframes - (ctr - ctr_start)
                 for i in range(padding):
-                    last_face_seen.save(str(dst_dir_path) + "/" + "img" + str(ctr) + ".jpg")
+                    frame_name = image_name_formatter(ctr)
+                    last_face_seen.save(str(dst_dir_path) + "/" + frame_name)
                     ctr += 1
             
-            #last_frame_file = all_frames[-1] #CROP THE LAST THING IN all_frames
-            #last_frame = face_recognition.load_image_file(question_folder_path / last_frame_file)
-            #last_frame_pil = Image.open(question_folder_path / last_frame_file)
-            #last_frame_locations = face_recognition.face_locations(last_frame)
-            #cropped_last_frame = last_frame_pil
-            #if (len(last_frame_locations) != 0):
-            #    top, right, bottom, left = last_frame_locations[0]
-            #    cropped_last_frame = last_frame_pil.crop((top, right, bottom, left))
-            #
-            #for i in range(keepframes - num_frames):
-            #    cropped_last_frame.save(str(dst_dir_path) + "/" + "img" + str(ctr) + ".jpg") #STORE THE last_frame
-            #    ctr += 1
-             
         else:
             # Copy every nth file (n = num_frames / keepframes) to the target directory
             jump = num_frames // keepframes
@@ -74,7 +65,8 @@ def crop_and_sample(video_file_path, dst_root_path, keepframes=32):
                 if (len(face_locations) != 0):
                     top, right, bottom, left = face_locations[0]
                     cropped_frame = frame_pil.crop((left, top, right, bottom)) #CROP THE FRAME USING ONLY FIRST FACE
-                cropped_frame.save(str(dst_dir_path) + "/" + "img" + str(ctr) + ".jpg") #STORE THE FRAME as img + ctr + .jpg
+                frame_name = image_name_formatter(ctr)
+                cropped_frame.save(str(dst_dir_path) + "/" + frame_name) #STORE THE FRAME as img + ctr + .jpg
                 ctr += 1
 
 def class_jpg_process(class_dir_path, dst_root_path):

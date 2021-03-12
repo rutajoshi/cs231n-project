@@ -4,8 +4,8 @@ import h5py
 def get_n_frames(video_path):
     return len([
         x for x in video_path.iterdir()
-        if 'img' in x.name and x.name[0] != '.'
-        #if 'image' in x.name and x.name[0] != '.'
+        #if 'img' in x.name and x.name[0] != '.'
+        if 'image' in x.name and x.name[0] != '.'
     ])
 
 
