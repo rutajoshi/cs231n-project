@@ -13,13 +13,17 @@ class ImageEmbeddingsLoader(object):
 
     def __call__(self, path):
         # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
-        with path.open('rb') as f:
-            with Image.open(f) as img:
-                img = img.convert('RGB')
-                img_tensor = torch.from_numpy(np.copy(np.asarray(img)))
-                img_tensor = img_tensor.unsqueeze(0).permute(0, 3, 1, 2).float()
-                img_embedding = resnet(img_tensor)
-                return img_embedding
+        filename = str(path.stem)+str(".txt")
+        path = "/home/ubuntu/data/processed_video/img_embeddings/" + filename
+        img_embedding = torch.load(path)
+        return img_embedding
+        #with path.open('rb') as f:
+            #with Image.open(f) as img:
+            #    img = img.convert('RGB')
+            #    img_tensor = torch.from_numpy(np.copy(np.asarray(img)))
+            #    img_tensor = img_tensor.unsqueeze(0).permute(0, 3, 1, 2).float()
+            #    img_embedding = resnet(img_tensor)
+            #    return img_embedding
 
 class ImageLoaderPIL(object):
 
