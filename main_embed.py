@@ -25,7 +25,7 @@ from temporal_transforms import (LoopPadding, TemporalRandomCrop,
                                  TemporalCenterCrop, TemporalEvenCrop,
                                  SlidingWindow, TemporalSubsampling)
 from temporal_transforms import Compose as TemporalCompose
-from dataset import get_training_data, get_validation_data, get_inference_data
+from dataset_embed import get_training_data, get_validation_data, get_inference_data
 from utils import Logger, worker_init_fn, get_lr
 from training import train_epoch
 from validation import val_epoch
@@ -167,9 +167,14 @@ def get_train_utils(opt, model_parameters):
         temporal_transform.append(TemporalCenterCrop(opt.sample_duration))
     temporal_transform = TemporalCompose(temporal_transform)
 
+    #train_data = get_training_data(opt.video_path, opt.annotation_path,
+    #                               opt.dataset, opt.input_type, opt.file_type,
+    #                               spatial_transform, temporal_transform)
+
+
     train_data = get_training_data(opt.video_path, opt.annotation_path,
                                    opt.dataset, opt.input_type, opt.file_type,
-                                   spatial_transform, temporal_transform)
+                                   None, None)
 
     print("Size of train data = " + str(len(train_data)))
     print("opt.batch_size = " + str(opt.batch_size))
@@ -248,11 +253,17 @@ def get_val_utils(opt):
         TemporalEvenCrop(opt.sample_duration, opt.n_val_samples))
     temporal_transform = TemporalCompose(temporal_transform)
 
+    #val_data, collate_fn = get_validation_data(opt.video_path,
+    #                                           opt.annotation_path, opt.dataset,
+    #                                           opt.input_type, opt.file_type,
+    #                                           spatial_transform,
+    #                                           temporal_transform)
+    
     val_data, collate_fn = get_validation_data(opt.video_path,
                                                opt.annotation_path, opt.dataset,
                                                opt.input_type, opt.file_type,
-                                               spatial_transform,
-                                               temporal_transform)
+                                               None,
+                                               None)
     
     print("Size of val data = " + str(len(val_data)))
     print("opt.batch_size = " + str(opt.batch_size))
@@ -304,11 +315,16 @@ def get_inference_utils(opt):
         SlidingWindow(opt.sample_duration, opt.inference_stride))
     temporal_transform = TemporalCompose(temporal_transform)
 
+    #inference_data, collate_fn = get_inference_data(
+    #    opt.video_path, opt.annotation_path, opt.dataset, opt.input_type,
+    #    opt.file_type, opt.inference_subset, spatial_transform,
+    #    temporal_transform)
+
     inference_data, collate_fn = get_inference_data(
         opt.video_path, opt.annotation_path, opt.dataset, opt.input_type,
-        opt.file_type, opt.inference_subset, spatial_transform,
-        temporal_transform)
-
+        opt.file_type, opt.inference_subset, None,
+        None)
+    
     inference_loader = torch.utils.data.DataLoader(
         inference_data,
         batch_size=opt.inference_batch_size,
@@ -406,12 +422,18 @@ def main_worker(index, opt):
     if opt.is_master_node:
         print(model)
 
+    label_path = "/home/ubuntu/data/processed_video/binary_labels/trainlist01.txt"
+    if opt.label_path is not None:
+        label_path = opt.label_path
+
     labels = []
-    with open("/home/ubuntu/data/processed_video/binary_labels/trainlist01.txt", 'r') as f:
+    #with open("/home/ubuntu/data/processed_video/binary_labels/trainlist01.txt", 'r') as f:
+    with open(label_path, 'r') as f:
         labels = torch.IntTensor([int(line.split(" ")[1]) for line in f])
     if (len(labels) == 0):
         print("LABELS IS EMPTY")
-    weights = compute_class_weight(labels, 2) #CHANGE FOR BINARY
+    #weights = compute_class_weight(labels, 2) #CHANGE FOR BINARY
+    weights = compute_class_weight(labels, opt.n_classes) #CHANGE FOR BINARY
     print("weights = " + str(weights))
     #criterion = CrossEntropyLoss().to(opt.device)
     # ADDED for 231n

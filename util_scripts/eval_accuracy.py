@@ -18,6 +18,12 @@ def load_ground_truth(ground_truth_path, subset):
 
     class_labels_map = get_class_labels(data)
 
+    # Added by RUTA
+    if (subset == "train"):
+        subset = "training"
+    elif (subset == "val"):
+        subset = "validation"
+
     ground_truth = []
     for video_id, v in data['database'].items():
         if subset != v['subset']:
@@ -69,7 +75,33 @@ def evaluate(ground_truth_path, result_path, subset, top_k, ignore):
     correct = [1 if line[1] in result[line[0]] else 0 for line in ground_truth]
     accuracy = sum(correct) / n_ground_truth
 
+    # Class-wise accuracy
+    #gt_class_counts, re_class_counts = [0 for i in range(4)], [0 for i in range(4)]
+    gt_class_counts, re_class_counts = [0 for i in range(2)], [0 for i in range(2)]
+    for line in ground_truth:
+        correct = 1 if line[1] in result[line[0]] else 0
+        if (correct == 1):
+            re_class_counts[line[1]] += 1
+        gt_class_counts[line[1]] += 1
+    #accuracies = [re_class_counts[i] for i in range(4)]
+    accuracies = [re_class_counts[i] for i in range(2)]
+    for i in range(len(gt_class_counts)):
+        if (gt_class_counts[i] != 0):
+            accuracies[i] = accuracies[i] / gt_class_counts[i]
+    print("Class counts GT = " + str(gt_class_counts))
+    print("Class counts RE = " + str(re_class_counts))
+    print("Class-wise accuracies = " + str(accuracies))
+
+    # Weighted accuracy
+    #weights = [0.4022, 0.9737, 3.7000, 4.6250] # 4 classes
+    weights = [0.8043, 1.3214] # 2 classes
+    total_weights = sum(weights)
+    #weighted_acc = sum([weights[i]*accuracies[i] for i in range(4)])
+    weighted_acc = sum([weights[i]*accuracies[i] / total_weights for i in range(2)])
+    print("Weighted accuracy = " + str(weighted_acc))
+
     print('top-{} accuracy: {}'.format(top_k, accuracy))
+    print("\n")
     return accuracy
 
 

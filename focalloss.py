@@ -3,6 +3,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
+def compute_class_weight(labels, num_classes):
+    """Make class weights for cross-entropy loss (useful for class imbalance,)
+    in accordance with sklearn.utils.class_weight.compute_class_weight"""
+    weights = len(labels) / (num_classes * torch.bincount(labels))
+    return weights
+
 class FocalLoss(nn.Module):
     def __init__(self, gamma=0, alpha=None, size_average=True):
         super(FocalLoss, self).__init__()

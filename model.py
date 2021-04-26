@@ -3,6 +3,8 @@ from torch import nn
 
 from models import resnet, resnet2p1d, pre_act_resnet, wide_resnet, resnext, densenet
 
+from embednet import EmbedNet
+
 
 def get_module_name(name):
     name = name.split('.')
@@ -34,7 +36,7 @@ def get_fine_tuning_parameters(model, ft_begin_module):
 
 def generate_model(opt):
     assert opt.model in [
-        'resnet', 'resnet2p1d', 'preresnet', 'wideresnet', 'resnext', 'densenet', 'crnn'
+        'resnet', 'resnet2p1d', 'preresnet', 'wideresnet', 'resnext', 'densenet', 'crnn', 'embednet'
     ]
 
     if opt.model == 'resnet' or opt.model == 'crnn':
@@ -91,6 +93,31 @@ def generate_model(opt):
                                         conv1_t_stride=opt.conv1_t_stride,
                                         no_max_pool=opt.no_max_pool)
 
+    # Add layers if it is a crnn
+    if opt.model == 'crnn':
+        n_finetune_classes = opt.n_classes
+        fc_hidden1, fc_hidden2, fc_hidden3 = 1024, 512, 256
+        #modules = list(model.children())[:-1] # delete the last fc layer.
+        model.fc = nn.Linear(model.fc.in_features, fc_hidden1)
+        #tmp_model.fl1 = nn.Flatten(fc_hidden1, -1)
+        model.end_bn1 = nn.BatchNorm1d(fc_hidden1, momentum=0.01)
+        model.end_fc2 = nn.Linear(fc_hidden1, fc_hidden2)
+        #tmp_model.fl2 = nn.Flatten(fc_hidden2, -1)
+        model.end_bn2 = nn.BatchNorm1d(fc_hidden2, momentum=0.01)
+        model.end_fc3 = nn.Linear(fc_hidden2, fc_hidden3)
+        model.end_bn3 = nn.BatchNorm1d(fc_hidden3, momentum=0.01)
+        model.end_fc4 = nn.Linear(fc_hidden3, n_finetune_classes)
+
+    if opt.model == 'embednet':
+        model = EmbedNet(input_channels=1, 
+                         n_channels=[1, 1, 1, 1, 1], 
+                         kernel_size=5, 
+                         dropout=0.5, 
+                         lstm_n_hidden=256, 
+                         lstm_n_layers=4, 
+                         lstm_bidirectional=False, 
+                         n_classes=opt.n_classes)
+
     return model
 
 
@@ -109,13 +136,15 @@ def load_pretrained_model(model, pretrain_path, model_name, n_finetune_classes):
                                      n_finetune_classes)
 
         if model_name == 'crnn':
-            fc_hidden1, fc_hidden2 = 512, 512
-            modules = list(model.children())[:-1] # delete the last fc layer.
-            tmp_model.fc1 = nn.Linear(tmp_model.fc.in_features, fc_hidden1)
-            tmp_model.bn1 = nn.BatchNorm1d(fc_hidden1, momentum=0.01)
-            tmp_model.fc2 = nn.Linear(fc_hidden1, fc_hidden2)
-            tmp_model.bn2 = nn.BatchNorm1d(fc_hidden2, momentum=0.01)
-            tmp_model.fc3 = nn.Linear(fc_hidden2, CNN_embed_dim)
+            fc_hidden1, fc_hidden2 = 1024, 512
+            #modules = list(model.children())[:-1] # delete the last fc layer.
+            tmp_model.fc = nn.Linear(tmp_model.fc.in_features, fc_hidden1)
+            #tmp_model.fl1 = nn.Flatten(fc_hidden1, -1)
+            tmp_model.end_bn1 = nn.BatchNorm1d(fc_hidden1, momentum=0.01)
+            tmp_model.end_fc2 = nn.Linear(fc_hidden1, fc_hidden2)
+            #tmp_model.fl2 = nn.Flatten(fc_hidden2, -1)
+            tmp_model.end_bn2 = nn.BatchNorm1d(fc_hidden2, momentum=0.01)
+            tmp_model.end_fc3 = nn.Linear(fc_hidden2, n_finetune_classes)
 
     #return model
     return tmp_model

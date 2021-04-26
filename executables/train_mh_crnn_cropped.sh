@@ -1,19 +1,20 @@
 python main.py --root_path /home/ubuntu/data/processed_video \
 	--video_path question_cropsampled \
 	--annotation_path question_cropsampled/mh_01.json \
-	--result_path results \
+	--result_path results_lr001_50_m80 \
 	--dataset mh \
 	--n_classes 4 \
 	--n_pretrain_classes 1039 \
-	--pretrain_path /home/ubuntu/ruta/pretrained/r3d152_KM_200ep.pth \
+	--pretrain_path /home/ubuntu/ruta/pretrained/r3d50_KM_200ep.pth \
 	--ft_begin_module fc \
-	--model resnet \
-	--model_depth 152 \
+	--model crnn \
+	--model_depth 50 \
 	--batch_size 10 \
 	--n_threads 4 \
 	--checkpoint 5 \
-	--n_epochs 10 \
-	--learning_rate 0.0005 \
+	--n_epochs 150 \
+	--learning_rate 0.001 \
 	--weight_decay 1e-3 \
-	--momentum 0.95 \
+	--momentum 0.8 \
 	--lr_scheduler plateau \
+	--sample_duration 224

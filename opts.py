@@ -288,6 +288,16 @@ def parse_opts():
                         type=int,
                         help='number of nodes for distributed training')
 
+    parser.add_argument('--fl_gamma',
+                        default=0,
+                        type=float,
+                        help='gamma for focal loss, default is 0 (cross entropy)')
+
+    parser.add_argument('--label_path',
+                        default=None,
+                        type=Path,
+                        help='path to the train labels - trainList.txt')
+
     args = parser.parse_args()
 
     return args

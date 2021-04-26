@@ -125,10 +125,12 @@ class VideoDataset(data.Dataset):
         if (len(clip) == 0):
             print("path = " + str(path))
             print("clip = " + str(clip))
-        if self.spatial_transform is not None:
-            self.spatial_transform.randomize_parameters()
-            clip = [self.spatial_transform(img) for img in clip]
-        clip = torch.stack(clip, 0).permute(1, 0, 2, 3)
+        #if self.spatial_transform is not None:
+        #    self.spatial_transform.randomize_parameters()
+        #    clip = [self.spatial_transform(img) for img in clip]
+        #clip = torch.stack(clip, 0).permute(1, 0, 2, 3)
+        clip = torch.stack(clip, 0).permute(1, 0, 2) # instead of 2D images, now we just have 1D channel embeddings
+        print("Clip shape = " + str(clip.shape))
 
         return clip
 
