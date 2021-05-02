@@ -18,23 +18,35 @@ class FocalLoss(nn.Module):
         if isinstance(alpha,list): self.alpha = torch.Tensor(alpha)
         self.size_average = size_average
 
-    def forward(self, input, target):
-        if input.dim()>2:
-            input = input.view(input.size(0),input.size(1),-1)  # N,C,H,W => N,C,H*W
-            input = input.transpose(1,2)    # N,C,H*W => N,H*W,C
-            input = input.contiguous().view(-1,input.size(2))   # N,H*W,C => N*H*W,C
+    def forward(self, inputs, target):
+        if inputs.dim()>2:
+            inputs = inputs.view(inputs.size(0),inputs.size(1),-1)  # N,C,H,W => N,C,H*W
+            inputs = inputs.transpose(1,2)    # N,C,H*W => N,H*W,C
+            inputs = inputs.contiguous().view(-1,inputs.size(2))   # N,H*W,C => N*H*W,C
         target = target.view(-1,1)
 
-        logpt = F.log_softmax(input)
-        logpt = logpt.gather(1,target)
+        print("Size of target = " + str(target.size()))
+        print("Size of input = " + str(inputs.size()))
+        print("alpha = " + str(self.alpha) + ", gamma = " + str(self.gamma))
+
+        logpt = F.log_softmax(inputs)
+        print("logpt 1 = " + str(logpt))
+        logpt = logpt.gather(1,target.clone())
+        print("logpt 2 = " + str(logpt))
         logpt = logpt.view(-1)
+        print("logpt 3 = " + str(logpt))
         pt = Variable(logpt.data.exp())
+        print("logpt 4 = " + str(logpt))
 
         if self.alpha is not None:
-            if self.alpha.type()!=input.data.type():
-                self.alpha = self.alpha.type_as(input.data)
-            at = self.alpha.gather(0,target.data.view(-1))
+            if self.alpha.type()!=inputs.data.type():
+                self.alpha = self.alpha.type_as(inputs.data)
+            at = self.alpha.gather(0,target.clone().data.view(-1))
             logpt = logpt * Variable(at)
+
+        #print("pt = " + str(pt))
+        #print("gamma = " + str(self.gamma))
+        #print("logpt 5 = " + str(logpt))
 
         loss = -1 * (1-pt)**self.gamma * logpt
         if self.size_average: return loss.mean()

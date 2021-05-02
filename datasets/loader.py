@@ -13,9 +13,10 @@ class ImageEmbeddingsLoader(object):
 
     def __call__(self, path):
         # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
-        filename = str(path.stem)+str(".txt")
-        path = "/home/ubuntu/data/processed_video/img_embeddings/" + filename
-        img_embedding = torch.load(path)
+        pieces = str(path).split("/")
+        classname, videoname, filename = pieces[-3], pieces[-2], pieces[-1].split(".")[0]+".pt"
+        path = "/home/ubuntu/data/processed_video/img_embeddings2/" + classname + "/" + videoname + "/" + filename
+        img_embedding = torch.load(path).detach()
         return img_embedding
         #with path.open('rb') as f:
             #with Image.open(f) as img:

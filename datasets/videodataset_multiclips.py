@@ -19,7 +19,7 @@ def custom_collate_fn(batch):
     ]
 
     maxshape = np.array(batch_clips[0]).shape
-    #print("maxshape = " + str(maxshape))
+    print("maxshape = " + str(maxshape))
     padded_batch_clips = []
 
     for x in batch_clips:

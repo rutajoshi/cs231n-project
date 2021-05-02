@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-from tcn_embed import TCN
+from tcn_embed2 import TCN
 
 class EmbedNet(nn.Module):
     def __init__(self, input_channels, n_channels, kernel_size, dropout, lstm_n_hidden, lstm_n_layers, lstm_bidirectional, n_classes=4):
@@ -14,10 +14,16 @@ class EmbedNet(nn.Module):
         self.regressor = n_classes == 1
 
     def forward(self, inputs):
+        #print("inputs size embednet = " + str(inputs.size()))
+        inputs = inputs.permute(0, 1, 3, 2)
         embeds = torch.stack([self.tcn(inpt) for inpt in inputs])
+        #print("embeds size = " + str(embeds.size()))
+        embeds = embeds.permute(1, 0, 2)
+        #print("embeds size = " + str(embeds.size()))
         lstm_out, _ = self.lstm(embeds)
         lstm_out = lstm_out[-1]
         out = self.fc(lstm_out)
+        #print(out)
         return out
 
     def train_forward(self, data, criterion, device=None):

@@ -109,12 +109,12 @@ def generate_model(opt):
         model.end_fc4 = nn.Linear(fc_hidden3, n_finetune_classes)
 
     if opt.model == 'embednet':
-        model = EmbedNet(input_channels=1, 
-                         n_channels=[1, 1, 1, 1, 1], 
+        model = EmbedNet(input_channels=512, 
+                         n_channels=[256, 128, 64, 32, 16, 8], 
                          kernel_size=5, 
                          dropout=0.5, 
                          lstm_n_hidden=256, 
-                         lstm_n_layers=4, 
+                         lstm_n_layers=5, 
                          lstm_bidirectional=False, 
                          n_classes=opt.n_classes)
 

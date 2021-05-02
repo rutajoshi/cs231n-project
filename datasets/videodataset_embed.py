@@ -130,7 +130,7 @@ class VideoDataset(data.Dataset):
         #    clip = [self.spatial_transform(img) for img in clip]
         #clip = torch.stack(clip, 0).permute(1, 0, 2, 3)
         clip = torch.stack(clip, 0).permute(1, 0, 2) # instead of 2D images, now we just have 1D channel embeddings
-        print("Clip shape = " + str(clip.shape))
+       # print("Clip shape = " + str(clip.shape))
 
         return clip
 

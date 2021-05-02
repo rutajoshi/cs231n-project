@@ -1,8 +1,9 @@
+CUDA_LAUNCH_BLOCKING=1
 rm -rf /home/ubuntu/data/processed_video/results_embednet
 mkdir /home/ubuntu/data/processed_video/results_embednet
 python main_embed.py --root_path /home/ubuntu/data/processed_video \
-        --video_path question_sampled \
-        --annotation_path question_sampled/mh_01.json \
+        --video_path question_black \
+        --annotation_path question_black/mh_01_fixed.json \
         --result_path results_embednet \
         --dataset mh \
         --n_classes 2 \
