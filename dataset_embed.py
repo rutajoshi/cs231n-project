@@ -119,7 +119,8 @@ def get_validation_data(video_path,
                                       video_loader=loader,
                                       video_path_formatter=video_path_formatter)
     else:
-        validation_data = VideoDatasetMultiClips(
+        #validation_data = VideoDatasetMultiClips(
+        validation_data = VideoDataset(
             video_path,
             annotation_path,
             'validation',
@@ -186,7 +187,8 @@ def get_inference_data(video_path,
                                      video_path_formatter=video_path_formatter,
                                      is_untrimmed_setting=True)
     else:
-        inference_data = VideoDatasetMultiClips(
+        #inference_data = VideoDatasetMultiClips(
+        inference_data = VideoDataset(
             video_path,
             annotation_path,
             subset,

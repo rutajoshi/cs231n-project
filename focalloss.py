@@ -25,18 +25,20 @@ class FocalLoss(nn.Module):
             inputs = inputs.contiguous().view(-1,inputs.size(2))   # N,H*W,C => N*H*W,C
         target = target.view(-1,1)
 
-        print("Size of target = " + str(target.size()))
-        print("Size of input = " + str(inputs.size()))
-        print("alpha = " + str(self.alpha) + ", gamma = " + str(self.gamma))
+        #print("Size of target = " + str(target.size()))
+        #print("Size of input = " + str(inputs.size()))
+        #print("alpha = " + str(self.alpha) + ", gamma = " + str(self.gamma))
 
         logpt = F.log_softmax(inputs)
-        print("logpt 1 = " + str(logpt))
+        #print("logpt 1 = " + str(logpt))
+        #print("logpt size = " + str(logpt.size()))
+        #print(target)
         logpt = logpt.gather(1,target.clone())
-        print("logpt 2 = " + str(logpt))
+        #print("logpt 2 = " + str(logpt))
         logpt = logpt.view(-1)
-        print("logpt 3 = " + str(logpt))
+        #print("logpt 3 = " + str(logpt))
         pt = Variable(logpt.data.exp())
-        print("logpt 4 = " + str(logpt))
+        #print("logpt 4 = " + str(logpt))
 
         if self.alpha is not None:
             if self.alpha.type()!=inputs.data.type():
