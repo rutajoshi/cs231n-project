@@ -1,7 +1,7 @@
 from torchvision import get_image_backend
 
 from datasets.videodataset_embed import VideoDataset
-from datasets.videodataset_multiclips import (VideoDatasetMultiClips,
+from datasets.videodataset_multiclips_embed import (VideoDatasetMultiClips,
                                               collate_fn,
                                               custom_collate_fn)
 from datasets.activitynet import ActivityNet
@@ -119,8 +119,7 @@ def get_validation_data(video_path,
                                       video_loader=loader,
                                       video_path_formatter=video_path_formatter)
     else:
-        #validation_data = VideoDatasetMultiClips(
-        validation_data = VideoDataset(
+        validation_data = VideoDatasetMultiClips(
             video_path,
             annotation_path,
             'validation',
@@ -187,8 +186,7 @@ def get_inference_data(video_path,
                                      video_path_formatter=video_path_formatter,
                                      is_untrimmed_setting=True)
     else:
-        #inference_data = VideoDatasetMultiClips(
-        inference_data = VideoDataset(
+        inference_data = VideoDatasetMultiClips(
             video_path,
             annotation_path,
             subset,

@@ -19,7 +19,7 @@ def custom_collate_fn(batch):
     ]
 
     maxshape = np.array(batch_clips[0]).shape
-    print("maxshape = " + str(maxshape))
+    #print("maxshape = " + str(maxshape))
     padded_batch_clips = []
 
     for x in batch_clips:
@@ -66,7 +66,10 @@ class VideoDatasetMultiClips(VideoDataset):
             if self.spatial_transform is not None:
                 self.spatial_transform.randomize_parameters()
                 clip = [self.spatial_transform(img) for img in clip]
-            clips.append(torch.stack(clip, 0).permute(1, 0, 2, 3))
+            
+            clip = torch.stack(clip, 0).permute(1, 0, 2)
+            clips.append(clip)
+            #clips.append(torch.stack(clip, 0).permute(1, 0, 2, 3))
             segments.append(
                 [min(clip_frame_indices),
                  max(clip_frame_indices) + 1])

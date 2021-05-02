@@ -72,7 +72,7 @@ class TCN(nn.Module):
 
     def forward(self, inputs):
         """Inputs have to have dimension (N, C_in, L_in)"""
-        print("tcn input size = " + str(inputs.size()))
+        #print("tcn input size = " + str(inputs.size()))
         y1 = self.tcn(inputs)  # input should have dimension (N, C, L)
 #         o = self.linear(y1[:, :, -1].view(1, -1))
         o = y1[:, :, -1]
