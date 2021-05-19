@@ -15,8 +15,12 @@ class ImageEmbeddingsLoader(object):
         # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
         pieces = str(path).split("/")
         classname, videoname, filename = pieces[-3], pieces[-2], pieces[-1].split(".")[0]+".pt"
-        path = "/home/ubuntu/data/processed_video/img_embeddings_binary/" + classname + "/" + videoname + "/" + filename
+        path = "/home/ubuntu/data/processed_video/keypoints_binary_nose/" + classname + "/" + videoname + "/" + filename
+        #path = "/home/ubuntu/data/processed_video/img_embeddings_binary/" + classname + "/" + videoname + "/" + filename
         img_embedding = torch.load(path).detach()
+        img_embedding = torch.reshape(img_embedding, (1, 136)).type(torch.FloatTensor)
+        #img_embedding = torch.flatten(img_embedding)
+        #print("img embedding shape = " + str(img_embedding.size()))
         return img_embedding
         #with path.open('rb') as f:
             #with Image.open(f) as img:

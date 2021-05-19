@@ -93,12 +93,16 @@ def evaluate(ground_truth_path, result_path, subset, top_k, ignore):
     print("Class-wise accuracies = " + str(accuracies))
 
     # Weighted accuracy
-    #weights = [0.4022, 0.9737, 3.7000, 4.6250] # 4 classes
-    weights = [0.8043, 1.3214] # 2 classes
-    total_weights = sum(weights)
-    #weighted_acc = sum([weights[i]*accuracies[i] for i in range(4)])
-    weighted_acc = sum([weights[i]*accuracies[i] / total_weights for i in range(2)])
+    weighted_acc = sum(accuracies) / len(accuracies)
     print("Weighted accuracy = " + str(weighted_acc))
+
+    ## Weighted accuracy
+    ##weights = [0.4022, 0.9737, 3.7000, 4.6250] # 4 classes
+    #weights = [0.8043, 1.3214] # 2 classes
+    #total_weights = sum(weights)
+    ##weighted_acc = sum([weights[i]*accuracies[i] for i in range(4)])
+    #weighted_acc = sum([weights[i]*accuracies[i] / total_weights for i in range(2)])
+    #print("Weighted accuracy = " + str(weighted_acc))
 
     print('top-{} accuracy: {}'.format(top_k, accuracy))
     print("\n")

@@ -123,6 +123,7 @@ class VideoDataset(data.Dataset):
     def __loading(self, path, frame_indices):
         clip = self.loader(path, frame_indices)
         if (len(clip) == 0):
+            print("frame indices = " + str(frame_indices))
             print("path = " + str(path))
             print("clip = " + str(clip))
         #if self.spatial_transform is not None:

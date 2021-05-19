@@ -1,0 +1,15 @@
+python main_embed.py --root_path ~/data/processed_video/ \
+	--video_path binary_data_embed \
+	--annotation_path binary_data_embed/mh_binary_fixed.json \
+	--result_path results_embednet \
+	--dataset mh \
+	--n_classes 2 \
+	--resume_path results_embednet/save_120.pth \
+	--model embednet \
+	--batch_size 10 \
+	--n_threads 4 \
+	--checkpoint 5 \
+	--inference \
+	--inference_subset val \
+	--no_train \
+	--no_val 

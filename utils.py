@@ -54,6 +54,8 @@ def calculate_accuracy(outputs, targets):
 
         _, pred = outputs.topk(1, 1, largest=True, sorted=True)
         pred = pred.t()
+        print("outputs = " + str(outputs))
+        print("targets = " + str(targets))
         #print("outputs shape = " + str(outputs.size()))
         #print(targets.view(1, -1))
         #print(pred)

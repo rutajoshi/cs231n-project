@@ -184,6 +184,22 @@ def get_train_utils(opt, model_parameters):
             train_data)
     else:
         train_sampler = None
+
+    # Weighted sampler
+    all_labels = [x[1] for x in train_data]
+    class_counts = [0 for i in range(opt.n_classes)]
+    for label in all_labels:
+        class_counts[label] += 1
+    N = sum(class_counts)
+    weight_per_class = [0.] * opt.n_classes
+    for i in range(opt.n_classes):
+        weight_per_class[i] = N / float(class_counts[i])
+    weights = [0] * len(train_data) 
+    for idx, val in enumerate(train_data):
+        weights[idx] = weight_per_class[val[1]]
+
+    torch.utils.data.sampler.WeightedRandomSampler(weights, len(weights))
+
     train_loader = torch.utils.data.DataLoader(train_data,
                                                batch_size=opt.batch_size,
                                                shuffle=(train_sampler is None),
@@ -435,9 +451,9 @@ def main_worker(index, opt):
     #weights = compute_class_weight(labels, 2) #CHANGE FOR BINARY
     weights = compute_class_weight(labels, opt.n_classes) #CHANGE FOR BINARY
     print("weights = " + str(weights))
-    #criterion = CrossEntropyLoss().to(opt.device)
+    criterion = CrossEntropyLoss(weights).to(opt.device)
     # ADDED for 231n
-    criterion = FocalLoss(gamma=opt.fl_gamma).to(opt.device)
+    #criterion = FocalLoss(gamma=opt.fl_gamma).to(opt.device)
 
     if not opt.no_train:
         (train_loader, train_sampler, train_logger, train_batch_logger,
