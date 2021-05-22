@@ -8,13 +8,13 @@ python main_embed.py --root_path /home/ubuntu/data/processed_video \
         --dataset mh \
         --n_classes 2 \
         --model embednet \
-        --batch_size 4 \
+        --batch_size 6 \
         --n_threads 4 \
         --checkpoint 30 \
-        --n_epochs 150 \
-        --learning_rate 1e-3 \
+        --n_epochs 300 \
+        --learning_rate 1e-5 \
         --lr_scheduler multistep \
         --sample_duration 352 \
-	--weight_decay 1e-4
-	#--fl_gamma 2 \
+	--weight_decay 1e-4 \
+	#--fl_gamma 3 \
         #--momentum 0.5 \

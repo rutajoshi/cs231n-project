@@ -242,8 +242,9 @@ def get_train_utils(opt, model_parameters):
         scheduler = lr_scheduler.ReduceLROnPlateau(
             optimizer, 'min', patience=opt.plateau_patience)
     else:
+        print("Multistep milestones = " + str(opt.multistep_milestones))
         scheduler = lr_scheduler.MultiStepLR(optimizer,
-                                             opt.multistep_milestones)
+                                             opt.multistep_milestones, verbose=True)
 
     return (train_loader, train_sampler, train_logger, train_batch_logger,
             optimizer, scheduler)
@@ -500,10 +501,10 @@ def main_worker(index, opt):
                                       conf_mtx_dict) # ADDED for CS231n
 
         # ADDED for 231n - uncomment if using cross entropy loss
-        #if not opt.no_train and opt.lr_scheduler == 'multistep':
-        #    scheduler.step()
-        #elif not opt.no_train and opt.lr_scheduler == 'plateau':
-        #    scheduler.step(prev_val_loss)
+        if not opt.no_train and opt.lr_scheduler == 'multistep':
+            scheduler.step()
+        elif not opt.no_train and opt.lr_scheduler == 'plateau':
+            scheduler.step(prev_val_loss)
 
     if opt.inference:
         inference_loader, inference_class_names = get_inference_utils(opt)

@@ -7,6 +7,7 @@ def compute_class_weight(labels, num_classes):
     """Make class weights for cross-entropy loss (useful for class imbalance,)
     in accordance with sklearn.utils.class_weight.compute_class_weight"""
     weights = len(labels) / (num_classes * torch.bincount(labels))
+    weights = weights / sum(weights)
     return weights
 
 class FocalLoss(nn.Module):

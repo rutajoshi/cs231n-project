@@ -7,8 +7,8 @@ class EmbedNet(nn.Module):
     def __init__(self, input_channels, n_channels, kernel_size, dropout, lstm_n_hidden, lstm_n_layers, lstm_bidirectional, n_classes=4):
         super(EmbedNet, self).__init__()
         # 1 TCN for all questions
-        output_embedding_size = 128
-        linear_hidden = 64
+        output_embedding_size = 1024
+        linear_hidden = 512
         self.tcn = TCN(input_channels, output_embedding_size, n_channels, kernel_size, dropout)
         #self.tcn.double()
         #self.lstm = nn.GRU(n_channels[-1], lstm_n_hidden, lstm_n_layers, True, False, dropout if lstm_n_layers > 0 else 0, lstm_bidirectional)
