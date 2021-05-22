@@ -11,9 +11,7 @@ class Chomp1d(nn.Module):
         self.chomp_size = chomp_size
 
     def forward(self, x):
-        #print("chomp input = " + str(x.size()))
         result = x[:, :, :-self.chomp_size].contiguous()
-        #print("chomp output = " + str(result.size()))
         return result
 
 
@@ -22,9 +20,6 @@ class TemporalBlock(nn.Module):
         super(TemporalBlock, self).__init__()
         self.conv1 = weight_norm(nn.Conv1d(n_inputs, n_outputs, kernel_size,
                                            stride=stride, padding=padding, dilation=dilation))
-        #self.conv1 = weight_norm(nn.Conv2d(n_inputs, n_outputs, kernel_size,
-        #                                   stride=stride, padding=padding, dilation=dilation))
-        
         self.chomp1 = Chomp1d(padding)
         self.relu1 = nn.ReLU()
         self.dropout1 = nn.Dropout(dropout)
@@ -48,13 +43,9 @@ class TemporalBlock(nn.Module):
             self.downsample.weight.data.normal_(0, 0.01)
 
     def forward(self, x):
-        #print("block input size = " + str(x.size()))
-        #print("Weights for conv1 = " + str(self.conv1.weight.size()))
-
         out = self.net(x)
         res = x if self.downsample is None else self.downsample(x)
         result = self.relu(out + res)
-        #print("temp block output size = " + str(result.size()))
         return result
 
 
@@ -73,9 +64,7 @@ class TemporalConvNet(nn.Module):
         self.network = nn.Sequential(*layers)
 
     def forward(self, x):
-        #print("temporal conv net input = " + str(x.size()))
         result = self.network(x)
-        #print("temporal conv net output size = " + str(result.size()))
         return result
 
 class TCN(nn.Module):
@@ -85,16 +74,13 @@ class TCN(nn.Module):
         self.linear = nn.Linear(num_channels[-1], output_size) # @ketan: numqs*num_channels[-1]
 
     def forward(self, inputs):
-        """Inputs have to have dimension (N, C_in, L_in)"""
-        print("tcn input size = " + str(inputs.size()))
-        y1 = self.tcn(inputs)  # input should have dimension (N, C, L)
+        """
+        Inputs have to have dimension (N, C_in, L_in)
+        input should have dimension (N, C, L)
+        """
+        #print("tcn input size = " + str(inputs.size()))
+        y1 = self.tcn(inputs)
         y1 = y1.transpose(1,2)
-        o = self.linear(y1) #.double()
+        o = self.linear(y1)
         return o
 
-#         o = self.linear(y1[:, :, -1].view(1, -1))
-        #print("before cutting = " + str(y1.size()))
-        #o = y1[:, :, -1]
-        #print("tcn output size = " + str(o.size()))
-        #return o
-#         return F.log_softmax(o, dim=1)

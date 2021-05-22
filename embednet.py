@@ -10,11 +10,6 @@ class EmbedNet(nn.Module):
         output_embedding_size = 1024
         linear_hidden = 512
         self.tcn = TCN(input_channels, output_embedding_size, n_channels, kernel_size, dropout)
-        #self.tcn.double()
-        #self.lstm = nn.GRU(n_channels[-1], lstm_n_hidden, lstm_n_layers, True, False, dropout if lstm_n_layers > 0 else 0, lstm_bidirectional)
-        #self.lstm = nn.LSTM(n_channels[-1], lstm_n_hidden, lstm_n_layers, True, False, dropout if lstm_n_layers > 0 else 0, lstm_bidirectional)
-        #self.fc = nn.Linear((2 if lstm_bidirectional else 1) * lstm_n_hidden, n_classes)
-        #self.fc = nn.Linear((2 if lstm_bidirectional else 1) * n_channels[-1], n_classes)
         self.fc = nn.Linear((2 if lstm_bidirectional else 1) * output_embedding_size, linear_hidden)
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(dropout)
@@ -26,7 +21,6 @@ class EmbedNet(nn.Module):
         inputs = inputs.permute(0, 1, 3, 2)
         inputs = inputs[:, 0, :, :]
         embeds = self.tcn(inputs)
-        #embeds = torch.stack([self.tcn(inpt) for inpt in inputs])
         print("embeds size = " + str(embeds.size()))
         embeds = embeds[:, -1:, :].squeeze(1) #.double()
         embeds = self.fc(embeds)
@@ -34,13 +28,6 @@ class EmbedNet(nn.Module):
         embeds = self.dropout(embeds)
         out = self.fc2(embeds)
         print("embednet output size = " + str(out.size()))
-        #out = self.fc(embeds)
-        #embeds = embeds.permute(1, 0, 2)
-        #print("embeds size = " + str(embeds.size()))
-        #lstm_out, _ = self.lstm(embeds)
-        #lstm_out = lstm_out[-1]
-        #out = self.fc(lstm_out)
-        #print(out)
         return out
 
     def train_forward(self, data, criterion, device=None):

@@ -159,8 +159,8 @@ def get_train_utils(opt, model_parameters):
 
     assert opt.train_t_crop in ['random', 'center']
     temporal_transform = []
-    if opt.sample_t_stride > 1:
-        temporal_transform.append(TemporalSubsampling(opt.sample_t_stride))
+    #if opt.sample_t_stride > 1:
+    #    temporal_transform.append(TemporalSubsampling(opt.sample_t_stride))
     if opt.train_t_crop == 'random':
         temporal_transform.append(TemporalRandomCrop(opt.sample_duration))
     elif opt.train_t_crop == 'center':
@@ -174,7 +174,7 @@ def get_train_utils(opt, model_parameters):
 
     train_data = get_training_data(opt.video_path, opt.annotation_path,
                                    opt.dataset, opt.input_type, opt.file_type,
-                                   None, None)
+                                   None, temporal_transform)
 
     print("Size of train data = " + str(len(train_data)))
     print("opt.batch_size = " + str(opt.batch_size))
@@ -198,7 +198,7 @@ def get_train_utils(opt, model_parameters):
     for idx, val in enumerate(train_data):
         weights[idx] = weight_per_class[val[1]]
 
-    torch.utils.data.sampler.WeightedRandomSampler(weights, len(weights))
+    train_sampler = torch.utils.data.sampler.WeightedRandomSampler(weights, len(weights))
 
     train_loader = torch.utils.data.DataLoader(train_data,
                                                batch_size=opt.batch_size,
@@ -452,7 +452,8 @@ def main_worker(index, opt):
     #weights = compute_class_weight(labels, 2) #CHANGE FOR BINARY
     weights = compute_class_weight(labels, opt.n_classes) #CHANGE FOR BINARY
     print("weights = " + str(weights))
-    criterion = CrossEntropyLoss(weights).to(opt.device)
+    #criterion = CrossEntropyLoss(weights).to(opt.device)
+    criterion = CrossEntropyLoss().to(opt.device)
     # ADDED for 231n
     #criterion = FocalLoss(gamma=opt.fl_gamma).to(opt.device)
 
