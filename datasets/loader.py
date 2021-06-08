@@ -19,6 +19,7 @@ class ImageEmbeddingsLoader(object):
         #path = "/home/ubuntu/data/processed_video/img_embeddings_binary/" + classname + "/" + videoname + "/" + filename
         img_embedding = torch.load(path).detach()
         img_embedding = torch.reshape(img_embedding, (1, 136)).type(torch.FloatTensor)
+        #print(img_embedding[0, 0:10])
         #img_embedding = torch.flatten(img_embedding)
         #print("img embedding shape = " + str(img_embedding.size()))
         return img_embedding

@@ -10,6 +10,6 @@ python main_embed.py --root_path ~/data/processed_video/ \
 	--n_threads 4 \
 	--checkpoint 5 \
 	--inference \
-	--inference_subset val \
+	--inference_subset train \
 	--no_train \
 	--no_val 

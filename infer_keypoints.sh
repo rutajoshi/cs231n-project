@@ -1,0 +1,31 @@
+python main_embed.py --root_path ~/data/processed_video/ \
+	--video_path binary_data_embed \
+	--annotation_path binary_data_embed/mh_binary_fixed.json \
+	--result_path results_keypoints \
+	--dataset mh \
+	--n_classes 2 \
+	--resume_path results_keypoints/save_300.pth \
+	--model embednet \
+	--batch_size 5 \
+	--n_threads 4 \
+	--checkpoint 5 \
+	--inference \
+	--inference_subset train \
+	--no_train \
+	--no_val 
+
+python main_embed.py --root_path ~/data/processed_video/ \
+        --video_path binary_data_embed \
+        --annotation_path binary_data_embed/mh_binary_fixed.json \
+        --result_path results_keypoints \
+        --dataset mh \
+        --n_classes 2 \
+        --resume_path results_keypoints/save_300.pth \
+        --model embednet \
+        --batch_size 5 \
+        --n_threads 4 \
+        --checkpoint 5 \
+        --inference \
+        --inference_subset val \
+        --no_train \
+        --no_val

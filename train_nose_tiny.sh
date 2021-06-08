@@ -12,9 +12,10 @@ python main_embed.py --root_path /home/ubuntu/data/processed_video \
         --n_threads 4 \
         --checkpoint 30 \
         --n_epochs 300 \
-        --learning_rate 1e-7 \
+        --learning_rate 1e-3 \
         --lr_scheduler multistep \
         --sample_duration 1 \
 	--weight_decay 1e-4 \
+	--train_t_crop center
 	#--fl_gamma 3 \
         #--momentum 0.5 \

@@ -121,13 +121,19 @@ def generate_model(opt):
         model = EmbedNet(input_channels=136, # 512 for embedding, 136 for keypoints 
                          n_channels=[128, 128, 128, 128, 128, 128, 128, 128, 128, 128], 
                          kernel_size=5, 
-                         dropout=0.5,
+                         dropout=0.6,
                          lstm_n_hidden=32, 
                          lstm_n_layers=5, 
                          lstm_bidirectional=False, 
                          n_classes=opt.n_classes)
+        model = model.apply(init_weights)
         #model.double()
     return model
+
+def init_weights(m):
+    if (type(m) in [nn.Linear, nn.Conv1d, nn.Conv2d]):
+        torch.nn.init.xavier_uniform(m.weight)
+        m.bias.data.fill_(0.01)
 
 
 def load_pretrained_model(model, pretrain_path, model_name, n_finetune_classes):
