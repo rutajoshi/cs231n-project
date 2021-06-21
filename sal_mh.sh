@@ -1,0 +1,16 @@
+python saliency.py --root_path /home/ubuntu/data/processed_video \
+	--video_path binary_data_embed \
+	--annotation_path binary_data_embed/mh_01.json \
+	--result_path results_keypoints_bin_cenw \
+	--dataset mh \
+	--n_classes 2 \
+	--resume_path results_keypoints_bin_cenw/save_300.pth \
+	--model embednet \
+	--batch_size 5 \
+        --n_threads 4 \
+        --checkpoint 5 \
+        --inference \
+        --inference_subset val \
+        --no_train \
+        --no_val \
+ 	--no_cuda
