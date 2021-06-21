@@ -64,6 +64,8 @@ def evaluate(ground_truth_path, result_path, subset, top_k, ignore):
 
     print('load result')
     result = load_result(result_path, top_k, class_labels_map)
+    print("Result = " + str(result))
+    print("Ground truth = " + str(ground_truth))
     print('number of result: {}'.format(len(result)))
 
     n_ground_truth = len(ground_truth)
@@ -71,20 +73,22 @@ def evaluate(ground_truth_path, result_path, subset, top_k, ignore):
     if ignore:
         n_ground_truth = len(ground_truth)
 
+    print("Actual n_ground_truth = " + str(n_ground_truth))
+
     print('calculate top-{} accuracy'.format(top_k))
     correct = [1 if line[1] in result[line[0]] else 0 for line in ground_truth]
     accuracy = sum(correct) / n_ground_truth
 
     # Class-wise accuracy
-    #gt_class_counts, re_class_counts = [0 for i in range(4)], [0 for i in range(4)]
-    gt_class_counts, re_class_counts = [0 for i in range(2)], [0 for i in range(2)]
+    gt_class_counts, re_class_counts = [0 for i in range(4)], [0 for i in range(4)]
+    #gt_class_counts, re_class_counts = [0 for i in range(2)], [0 for i in range(2)]
     for line in ground_truth:
         correct = 1 if line[1] in result[line[0]] else 0
         if (correct == 1):
             re_class_counts[line[1]] += 1
         gt_class_counts[line[1]] += 1
-    #accuracies = [re_class_counts[i] for i in range(4)]
-    accuracies = [re_class_counts[i] for i in range(2)]
+    accuracies = [re_class_counts[i] for i in range(4)]
+    #accuracies = [re_class_counts[i] for i in range(2)]
     for i in range(len(gt_class_counts)):
         if (gt_class_counts[i] != 0):
             accuracies[i] = accuracies[i] / gt_class_counts[i]

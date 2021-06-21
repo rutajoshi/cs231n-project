@@ -147,7 +147,7 @@ def get_inference_data(video_path,
     ]
     assert input_type in ['rgb', 'flow']
     assert file_type in ['jpg', 'hdf5']
-    assert inference_subset in ['train', 'val', 'test']
+    assert inference_subset in ['train', 'val', 'test', 'all']
 
     if file_type == 'jpg':
         assert input_type == 'rgb', 'flow input is supported only when input type is hdf5.'
@@ -175,6 +175,8 @@ def get_inference_data(video_path,
         subset = 'validation'
     elif inference_subset == 'test':
         subset = 'testing'
+    elif inference_subset == 'all': # ADDED BY RUTA
+        subset = 'all'
     if dataset_name == 'activitynet':
         inference_data = ActivityNet(video_path,
                                      annotation_path,
@@ -199,3 +201,4 @@ def get_inference_data(video_path,
 
     #return inference_data, collate_fn
     return inference_data, custom_collate_fn # ADDED BY RUTA
+

@@ -40,6 +40,9 @@ class TemporalBlock(nn.Module):
 
         self.net = nn.Sequential(self.conv1, self.bn1, self.chomp1, self.relu1, self.dropout1,
                                  self.conv2, self.bn2, self.chomp2, self.relu2, self.dropout2)
+        #self.net = nn.Sequential(self.conv1, self.chomp1, self.relu1, self.dropout1,
+        #                         self.conv2, self.chomp2, self.relu2, self.dropout2)
+        
         self.downsample = nn.Conv1d(n_inputs, n_outputs, 1) if n_inputs != n_outputs else None
         self.relu = nn.ReLU()
         self.init_weights()

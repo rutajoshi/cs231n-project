@@ -23,7 +23,7 @@ def get_database(data, subset, root_path, video_path_formatter):
 
     for key, value in data['database'].items():
         this_subset = value['subset']
-        if this_subset == subset:
+        if this_subset == subset or subset == 'all':
             video_ids.append(key)
             annotations.append(value['annotations'])
             if 'video_path' in value:

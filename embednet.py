@@ -7,8 +7,8 @@ class EmbedNet(nn.Module):
     def __init__(self, input_channels, n_channels, kernel_size, dropout, lstm_n_hidden, lstm_n_layers, lstm_bidirectional, n_classes=4):
         super(EmbedNet, self).__init__()
         # 1 TCN for all questions
-        output_embedding_size = 2000 #2048 #1024 - worked for tiny data, 1 vector per video
-        linear_hidden = 900 #1024 #512 - worked for tiny data, 1 vector per video
+        output_embedding_size = 1536 #2048 #1024 - worked for tiny data, 1 vector per video
+        linear_hidden = 768 #1024 #512 - worked for tiny data, 1 vector per video
         self.tcn = TCN(input_channels, output_embedding_size, n_channels, kernel_size, dropout)
         self.fc = nn.Linear((2 if lstm_bidirectional else 1) * output_embedding_size, linear_hidden)
         self.relu = nn.ReLU()
@@ -17,17 +17,18 @@ class EmbedNet(nn.Module):
         self.regressor = n_classes == 1
 
     def forward(self, inputs):
-        print("inputs size embednet = " + str(inputs.size()))
+        #print("inputs size embednet = " + str(inputs.size()))
         inputs = inputs.permute(0, 1, 3, 2)
         inputs = inputs[:, 0, :, :]
         embeds = self.tcn(inputs)
-        print("embeds size = " + str(embeds.size()))
+        #print("embeds size = " + str(embeds.size()))
         embeds = embeds[:, -1:, :].squeeze(1) #.double()
         embeds = self.fc(embeds)
         embeds = self.relu(embeds)
         embeds = self.dropout(embeds)
+        #return embeds # for lastlayer
         out = self.fc2(embeds)
-        print("embednet output size = " + str(out.size()))
+        #print("embednet output size = " + str(out.size()))
         return out
 
     def train_forward(self, data, criterion, device=None):

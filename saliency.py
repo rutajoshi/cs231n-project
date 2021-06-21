@@ -25,7 +25,7 @@ from temporal_transforms import (LoopPadding, TemporalRandomCrop,
                                  TemporalCenterCrop, TemporalEvenCrop,
                                  SlidingWindow, TemporalSubsampling)
 from temporal_transforms import Compose as TemporalCompose
-from dataset import get_training_data, get_validation_data, get_inference_data
+from dataset_embed import get_training_data, get_validation_data, get_inference_data
 from utils import Logger, worker_init_fn, get_lr
 from training import train_epoch
 from validation import val_epoch
@@ -35,11 +35,15 @@ import inference
 import csv
 import matplotlib.pyplot as plt
 
+# Added for keypoint features
+import dlib
+
 #ACTION_NAMES = ["sneezeCough", "staggering", "fallingDown",
 #                "headache", "chestPain", "backPain",
 #                "neckPain", "nauseaVomiting", "fanSelf"]
 
 ACTION_NAMES = ["minimal", "mildLow", "modMedium", "severeHigh"]
+ACTION_DICT = {"minimal" : 0, "mildLow" : 1, "modMedium" : 2, "severeHigh" : 3}
 
 def json_serial(obj):
     if isinstance(obj, Path):
@@ -301,8 +305,9 @@ def get_inference_utils(opt):
 
     inference_data, collate_fn = get_inference_data(
         opt.video_path, opt.annotation_path, opt.dataset, opt.input_type,
-        opt.file_type, opt.inference_subset, spatial_transform,
-        temporal_transform)
+        opt.file_type, opt.inference_subset, 
+        None, #spatial_transform,
+        None) #temporal_transform)
 
     inference_loader = torch.utils.data.DataLoader(
         inference_data,
@@ -348,24 +353,32 @@ def get_saliency_map(X, y, model, opt):
     model.eval()
 
     # Make input tensors require gradient
+    print("X shape = " + str(X.shape))
     X.requires_grad_()
     saliency = None
+
+    # Get the labels as a json dict
+    with opt.annotation_path.open('r') as f:
+        data = json.load(f)
 
     # Convert y (targets) into labels
     labels = []
     for elem in y:
         #label = int(elem[0].split('_')[0][-2:]) - 41
-        label = int(elem[0].split('_')[2])
+        #print(elem) # ['inperson_30', [1, 353]] --> use the number to get the label
+        label = data['database'][elem[0]]["annotations"]["label"]
+        label = ACTION_DICT[label]
         labels.append(label)
 
     y = torch.LongTensor(labels).to(opt.device)
     scores = model(X).gather(1, y.view(-1, 1)).squeeze().sum()
     scores.backward()
     saliency, temp = X.grad.data.abs().max(dim = 1)
+    print("saliency = " + str(saliency.shape))
     return saliency
 
 
-def plot_saliency(sal_map, i, inputs, targets):
+def plot_saliency(sal_map, i, inputs, targets, opt):
     # Use matplotlib to make one figure showing the average image for each segment
     # for the video and the saliency map for each segment of the video
 
@@ -374,29 +387,75 @@ def plot_saliency(sal_map, i, inputs, targets):
     # inputs has shape 5x3x16x112x112 --> this is the segment of input images
     # Avg over 16 images in the segment and take max over 3 channels of each image
     # Plot each of the 5 images with corresponding heatmap of saliency
+
+    # --- MH ---
+    # saliency map has shape 5x351x136 --> 5 is batch size, 351 images per video, each video gets a 1x136 keypoint vector
+    # y is the labels --> shape 5
+    # Cut the input into 5 segments manually --> 5x70x5x136
+    # average over 70 images to get 5x5x136
+    # plot those 5 images from the original video, with the keypoints overlayed
+
+    # Get the face detector and predictor from dlib
+    detector = dlib.get_frontal_face_detector()
+    predictor = dlib.shape_predictor("util_scripts/shape_predictor_68_face_landmarks.dat")
+
+    # Get the labels as a json dict
+    with opt.annotation_path.open('r') as f:
+        data = json.load(f)
    
     with torch.no_grad():
         sal_map = sal_map.numpy()
-        inputs = inputs.detach().numpy()
+        print("Original sal map shape = " + str(sal_map.shape))
+        # 1. cut the saliency map into 5 segments
         # 1. Average over saliency map dimensions
-        avg_sal_map = np.mean(sal_map, axis=1)
+        sal_map = np.expand_dims(sal_map, axis=1)[:,:,:-1,:] # remove 351st image
+        sal_shape = sal_map.shape()
+        print("Sal shape = " + str(sal_shape))
+        sal_map = np.reshape(sal_map, (sal_shape[0], sal_shape[2]//5, 5, sal_shape[3])) # should be 5x70x5x136
 
-        # 2. Average over image dimensions
-        avg_inputs = np.mean(inputs, axis=2)
-        max_inputs = np.mean(avg_inputs, axis=1)
+        # Average over each segment
+        avg_sal_map = np.mean(sal_map, axis=1) # 5x5x136
 
         # 3. Convert targets into labels
         labels = []
         for elem in targets:
-            label = int(elem[0].split('_')[0][-2:]) - 41
+            label = data['database'][elem[0]]["annotations"]["label"]
+            label = ACTION_DICT[label]
             labels.append(label)
         y = torch.LongTensor(labels).to(opt.device)
+        print("y shape = " + str(y.shape))
+
+        # For each video, find the 5 relevant images (img 0, 70, 140, 210, 280)
+        relevant_indices = [i * (sal_shape[2]//5) for i in range(5)]
+        image_name_formatter = lambda x: f'image_{x:05d}.jpg'
+        image_names = [image_name_formatter(i) for i in relevant_indices]
+        
+        img_root_dir = ""
+        kpt_root_dir = ""
+        for elem in targets:
+            videoname = elem[0]
+            img_dirpath = img_root_dir + "/" + elem
+            kpt_dirpath = kpt_root_dir + "/" + elem
+
+
+        # Get the original keypoints for those images
+        # reshape saliency so you can color the keypoints by saliency
+        # imshow each of the 5 images and plot the keypoint features on top, colored by saliency
+
+        # Do the same to the inputs
+        # 2. Average over image dimensions
+        inputs = inputs.detach().numpy()[:,:,:-1,:]
+        inp_shape = inputs.shape()
+        inputs = np.reshape(inputs, (inp_shape[0], inp_shape[2]//5, 5, inp_shape[3])) # should be 5x70x5x136
+        
+        avg_inputs = np.mean(inputs, axis=1) # 5x5x136
+        max_inputs = np.mean(avg_inputs, axis=1) # 5x136
 
         # 3. Make a plt figure and put the images in their correct positions and save to file
-        N = sal_map.shape[0]
+        N = sal_map.shape[0] # 5
         for i in range(N):
             plt.subplot(2, N, i + 1)
-            plt.imshow(max_inputs[i])
+            plt.imshow(max_inputs[i]) # 136
             plt.axis('off')
             plt.title(ACTION_NAMES[y[i]])
             plt.subplot(2, N, N + i + 1)
@@ -404,8 +463,7 @@ def plot_saliency(sal_map, i, inputs, targets):
             plt.axis('off')
             #plt.gcf().set_size_inches(12, )
 
-        #figpath = Path('/home/ruta/teeny_data/saliency_big101/map' + ACTION_NAMES[y[i]])
-        figpath = Path('/Users/ruta/stanford/pac/mentalhealth/results/map' + ACTION_NAMES[y[i]])
+        figpath = Path('/home/ubuntu/data/processed_video/salmaps/bin_phq/map' + ACTION_NAMES[y[i]])
         plt.savefig(figpath)
     return None
 
@@ -434,16 +492,16 @@ def compute_saliency_maps(model, opt):
         SlidingWindow(opt.sample_duration, opt.inference_stride))
     temporal_transform = TemporalCompose(temporal_transform)
 
-    tiny_video_path = Path('/Users/ruta/stanford/pac/mentalhealth/cropped_phi_data/jpg') #Path('/home/ruta/teeny_data/nturgb/jpg')
-    tiny_annotation_path = Path('/Users/ruta/stanford/pac/mentalhealth/mh_01.json') #Path('/home/ruta/teeny_data/ntu_01.json')
-    tiny_data, collate_fn = get_inference_data(tiny_video_path, 
-                                               tiny_annotation_path,
+    #tiny_video_path = Path('/Users/ruta/stanford/pac/mentalhealth/cropped_phi_data/jpg') #Path('/home/ruta/teeny_data/nturgb/jpg')
+    #tiny_annotation_path = Path('/Users/ruta/stanford/pac/mentalhealth/mh_01.json') #Path('/home/ruta/teeny_data/ntu_01.json')
+    tiny_data, collate_fn = get_inference_data(opt.video_path, 
+                                               opt.annotation_path,
                                                opt.dataset, 
                                                opt.input_type, 
                                                opt.file_type,
                                                opt.inference_subset,
-                                               spatial_transform, 
-                                               temporal_transform)
+                                               None, #spatial_transform, 
+                                               None) #temporal_transform)
 
     tiny_loader = torch.utils.data.DataLoader(tiny_data,
                                                batch_size=opt.inference_batch_size,
@@ -458,7 +516,7 @@ def compute_saliency_maps(model, opt):
     for i, (inputs, targets) in enumerate(tiny_loader):
         sal_map = get_saliency_map(inputs, targets, model, opt)
         # Plot the saliency map using matplotlib and save to a file
-        plot_saliency(sal_map, i, inputs, targets)
+        plot_saliency(sal_map, i, inputs, targets, opt)
         saliency_maps.append(sal_map)
 
     return saliency_maps
@@ -549,10 +607,10 @@ def main_worker(index, opt):
                                       conf_mtx_dict) # ADDED for CS231n
 
         # ADDED for 231n - uncomment if using cross entropy loss
-        #if not opt.no_train and opt.lr_scheduler == 'multistep':
-        #    scheduler.step()
-        #elif not opt.no_train and opt.lr_scheduler == 'plateau':
-        #    scheduler.step(prev_val_loss)
+        if not opt.no_train and opt.lr_scheduler == 'multistep':
+            scheduler.step()
+        elif not opt.no_train and opt.lr_scheduler == 'plateau':
+            scheduler.step(prev_val_loss)
 
     if opt.inference:
         inference_loader, inference_class_names = get_inference_utils(opt)

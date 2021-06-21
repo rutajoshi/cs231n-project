@@ -6,11 +6,12 @@ from sklearn.model_selection import train_test_split
 import csv
 
 DATADIRS = []
-DATADIRS.append("/share/pi/schul/schul-behavioral/data/ai-behavioral-health-mp4/")
+#DATADIRS.append("/share/pi/schul/schul-behavioral/data/ai-behavioral-health-mp4/")
+DATADIRS.append("/home/ubuntu/data/video")
 
 # MAKE THIS DIR before you run the script
-TARGET_DIR = '/home/ubuntu/data/processed_video/question_cropsampled' #"/Users/ruta/stanford/pac/mentalhealth/mhq_local_targets"
-LABEL_DIR = '/home/ubuntu/data/processed_video/mhq_local_labels' #"/Users/ruta/stanford/pac/mentalhealth/mhq_local_labels"
+TARGET_DIR = '/home/ubuntu/data/processed_video/gad7_data' #"/Users/ruta/stanford/pac/mentalhealth/mhq_local_targets"
+LABEL_DIR = '/home/ubuntu/data/processed_video/gad7_labels' #"/Users/ruta/stanford/pac/mentalhealth/mhq_local_labels"
 
 ACTIONS_TO_KEEP = range(4)
 # 0-4 = minimal risk
@@ -19,19 +20,23 @@ ACTIONS_TO_KEEP = range(4)
 # 15+ = severe/high risk
 ACTION_NAMES = ["minimal", "mildLow", "modMedium", "severeHigh"]
 
+ALL_LABELS = '/home/ubuntu/ketan/questionnaire_data_clean.csv'
 LABELS_CSV = '/home/ubuntu/data/processed_video/split_csvs' #"/Users/ruta/stanford/pac/mentalhealth/split_csvs"
 
 # Copy files to target directory into the right directory structure given the class
 def organize_files_by_class(dirname):
     # Read the labels csv into a df so that you can read the files in numerical order
-    csv_df = pd.read_csv(LABELS_CSV)
+    csv_df = pd.read_csv(ALL_LABELS)
 
     # For each line in the csv, skipping the header, find the corresponding video file
     for index, row in csv_df.iterrows():
         patient_id = int(row['participant_id'])
-        bucket = int(row['PHQ9_bucket'])
+        #bucket = int(row['PHQ9_bucket'])
+        bucket = int(row['GAD7_bucket'])
         
         filename = "zoom_" + str(patient_id) + ".mp4"
+        if patient_id < 34:
+            filename = "inperson_" + str(patient_id) + ".mkv"
         filepath = dirname + "/" + filename
         assert(os.path.isfile(filepath))
         
@@ -42,7 +47,7 @@ def organize_files_by_class(dirname):
             os.mkdir(class_dir)
         filebase, ext = filename.split(".")
         new_filename = class_dir+filebase+"_"+str(bucket)+"."+ext
-        shutil.copy(dirname+filename, new_filename)
+        shutil.copy(filepath, new_filename)
         print("Copied file: " + filename)
 
 # Make classInd files
@@ -77,7 +82,8 @@ def make_txtfile(csvfilename, txtfilename):
         X_section, y_section = [], []
         for row in csv_reader:
             if (line_count != 0):
-                video_num, class_num = int(row[0]), int(row[-1])
+                #video_num, class_num = int(row[0]), int(row[-1]) #PHQ9
+                video_num, class_num = int(row[0]), int(row[-2]) #GAD7
                 if (video_num == 2): # No audio to annotate
                     line_count += 1
                     continue
@@ -154,9 +160,9 @@ def make_train_test_lists(X, y, test_size=0.2):
 
 if __name__ == '__main__':
 
-    #for datadir in DATADIRS:
-    #    organize_files_by_class(datadir)
-    #    print("done organizing files by class for datadir: " + datadir)
+    for datadir in DATADIRS:
+        organize_files_by_class(datadir)
+        print("done organizing files by class for datadir: " + datadir)
 
     make_class_index(TARGET_DIR)
     print("made class index")

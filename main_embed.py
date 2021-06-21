@@ -408,8 +408,10 @@ def main_worker(index, opt):
 
     if opt.is_master_node:
         print(model)
-
+    
     label_path = "/home/ubuntu/data/processed_video/binary_labels/trainlist01.txt"
+    if opt.n_classes == 4:
+        label_path = "/home/ubuntu/data/processed_video/mhq_local_labels/trainlist01.txt"
     if opt.label_path is not None:
         label_path = opt.label_path
 
@@ -422,8 +424,8 @@ def main_worker(index, opt):
     #weights = compute_class_weight(labels, 2) #CHANGE FOR BINARY
     weights = compute_class_weight(labels, opt.n_classes) #CHANGE FOR BINARY
     print("weights = " + str(weights))
-    criterion = CrossEntropyLoss(weights).to(opt.device)
-    #criterion = CrossEntropyLoss().to(opt.device)
+    #criterion = CrossEntropyLoss(weights).to(opt.device)
+    criterion = CrossEntropyLoss().to(opt.device)
     # ADDED for 231n
     #criterion = FocalLoss(gamma=opt.fl_gamma).to(opt.device)
 
