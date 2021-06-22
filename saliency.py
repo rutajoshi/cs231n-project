@@ -430,41 +430,73 @@ def plot_saliency(sal_map, i, inputs, targets, opt):
         image_name_formatter = lambda x: f'image_{x:05d}.jpg'
         image_names = [image_name_formatter(i) for i in relevant_indices]
         
-        img_root_dir = ""
-        kpt_root_dir = ""
-        for elem in targets:
+        img_root_dir = "/home/ubuntu/data/processed_video/binary_data_embed"
+        #kpt_root_dir = "/home/ubuntu/data/processed_video/keypoints_binary_nose"
+        # For each element in targets, get the relevant image paths and keypoint paths
+        # For each relevant image, get the saliency map
+        # Plot the image in the background, then scatter the keypoints using saliency as heatmap color
+        for i in range(len(targets)):
+            elem = targets[i]
             videoname = elem[0]
-            img_dirpath = img_root_dir + "/" + elem
-            kpt_dirpath = kpt_root_dir + "/" + elem
+            classname = data['database'][videoname]["annotations"]["label"]
+            img_dirpath = img_root_dir + "/" + classname + "/" + videoname
+            #kpt_dirpath = kpt_root_dir + "/" + classname + "/" + videoname
+            for j in range(len(image_names)):
+                img_name = image_names[j]
+                img_path = img_dirpath + "/" + img_name
 
+                # Get keypoints
+                img = cv2.imread(str(img_path))
+                gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                faces = detector(gray_img, 1)
+                height, width = gray_img.shape
+                face = dlib.rectangle(left=0, top=0, right=width-1, bottom=height-1)
+                if (len(faces) > 0):
+                    face = faces[0]
+                keypoints = predictor(gray_img, face)
+                keypoints = face_utils.shape_to_np(keypoints) # shape should be (68, 2)
+                
+                # Get saliency map
+                sals = sal_map[i][j] # numpy array of length 136
+                sals = np.reshape(sals, (68, 2))
+                sals = np.mean(sals, axis=1) # shape is (68,)
+                
+                plt.subplot(2, len(image_names), j+1)
+                im = plt.imread(img_path)
+                implot = plt.imshow(im)
+                plt.scatter(keypoints[:,0], keypoints[:,1], c=sals, cmap=plt.cm.hot)
+                plt.axis("off")
 
-        # Get the original keypoints for those images
-        # reshape saliency so you can color the keypoints by saliency
-        # imshow each of the 5 images and plot the keypoint features on top, colored by saliency
+            figpath = Path('/home/ubuntu/data/processed_video/salmaps/bin_phq/map_' + classname)     
+            plt.savefig(figpath)
 
-        # Do the same to the inputs
-        # 2. Average over image dimensions
-        inputs = inputs.detach().numpy()[:,:,:-1,:]
-        inp_shape = inputs.shape()
-        inputs = np.reshape(inputs, (inp_shape[0], inp_shape[2]//5, 5, inp_shape[3])) # should be 5x70x5x136
-        
-        avg_inputs = np.mean(inputs, axis=1) # 5x5x136
-        max_inputs = np.mean(avg_inputs, axis=1) # 5x136
+        ## Get the original keypoints for those images
+        ## reshape saliency so you can color the keypoints by saliency
+        ## imshow each of the 5 images and plot the keypoint features on top, colored by saliency
 
-        # 3. Make a plt figure and put the images in their correct positions and save to file
-        N = sal_map.shape[0] # 5
-        for i in range(N):
-            plt.subplot(2, N, i + 1)
-            plt.imshow(max_inputs[i]) # 136
-            plt.axis('off')
-            plt.title(ACTION_NAMES[y[i]])
-            plt.subplot(2, N, N + i + 1)
-            plt.imshow(avg_sal_map[i], cmap=plt.cm.hot)
-            plt.axis('off')
-            #plt.gcf().set_size_inches(12, )
+        ## Do the same to the inputs
+        ## 2. Average over image dimensions
+        #inputs = inputs.detach().numpy()[:,:,:-1,:]
+        #inp_shape = inputs.shape()
+        #inputs = np.reshape(inputs, (inp_shape[0], inp_shape[2]//5, 5, inp_shape[3])) # should be 5x70x5x136
+        #
+        #avg_inputs = np.mean(inputs, axis=1) # 5x5x136
+        #max_inputs = np.mean(avg_inputs, axis=1) # 5x136
 
-        figpath = Path('/home/ubuntu/data/processed_video/salmaps/bin_phq/map' + ACTION_NAMES[y[i]])
-        plt.savefig(figpath)
+        ## 3. Make a plt figure and put the images in their correct positions and save to file
+        #N = sal_map.shape[0] # 5
+        #for i in range(N):
+        #    plt.subplot(2, N, i + 1)
+        #    plt.imshow(max_inputs[i]) # 136
+        #    plt.axis('off')
+        #    plt.title(ACTION_NAMES[y[i]])
+        #    plt.subplot(2, N, N + i + 1)
+        #    plt.imshow(avg_sal_map[i], cmap=plt.cm.hot)
+        #    plt.axis('off')
+        #    #plt.gcf().set_size_inches(12, )
+
+        #figpath = Path('/home/ubuntu/data/processed_video/salmaps/bin_phq/map' + ACTION_NAMES[y[i]])
+        #plt.savefig(figpath)
     return None
 
 
