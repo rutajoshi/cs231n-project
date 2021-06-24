@@ -25,12 +25,12 @@ def nose_center_normalize(keypoints, width, height):
     nose = keypoints[34]
     # Get vector from center of image to center of nose
     img_center = np.array([width/2, height/2])
-    nose_shift = nose - img_center
+    nose_shift = img_center - nose
 
     # For each keypoint, add that vector
     new_keypoints = np.copy(keypoints) + nose_shift
     # Keep track of distance to nose for each point
-    distances = np.linalg.norm(new_keypoints - nose, axis=1)
+    distances = np.linalg.norm(new_keypoints - img_center, axis=1)
     max_distance = np.max(distances)
     # Divide each coordinate by max distance
     new_keypoints = new_keypoints / max_distance
@@ -46,7 +46,7 @@ def get_dlib_keypoint_features(src_root_path, dst_root_path):
     # Save embedding to a file in dst_root_path
     for class_folder in sorted(src_root_path.iterdir()):
         class_name = str(class_folder).split("/")[-1]
-        if (class_name == "mh_01_fixed.json"):
+        if (class_name == "mh_01.json"):
             continue
         os.mkdir(dst_root_path / class_name)
         for video_folder in sorted(class_folder.iterdir()):

@@ -36,14 +36,19 @@ import csv
 import matplotlib.pyplot as plt
 
 # Added for keypoint features
+import cv2
+from imutils import face_utils
 import dlib
 
 #ACTION_NAMES = ["sneezeCough", "staggering", "fallingDown",
 #                "headache", "chestPain", "backPain",
 #                "neckPain", "nauseaVomiting", "fanSelf"]
 
-ACTION_NAMES = ["minimal", "mildLow", "modMedium", "severeHigh"]
-ACTION_DICT = {"minimal" : 0, "mildLow" : 1, "modMedium" : 2, "severeHigh" : 3}
+#ACTION_NAMES = ["minimal", "mildLow", "modMedium", "severeHigh"]
+#ACTION_DICT = {"minimal" : 0, "mildLow" : 1, "modMedium" : 2, "severeHigh" : 3}
+
+ACTION_NAMES = ["minimal", "notable"]
+ACTION_DICT = {"minimal" : 0, "notable" : 1}
 
 def json_serial(obj):
     if isinstance(obj, Path):
@@ -409,7 +414,7 @@ def plot_saliency(sal_map, i, inputs, targets, opt):
         # 1. cut the saliency map into 5 segments
         # 1. Average over saliency map dimensions
         sal_map = np.expand_dims(sal_map, axis=1)[:,:,:-1,:] # remove 351st image
-        sal_shape = sal_map.shape()
+        sal_shape = sal_map.shape
         print("Sal shape = " + str(sal_shape))
         sal_map = np.reshape(sal_map, (sal_shape[0], sal_shape[2]//5, 5, sal_shape[3])) # should be 5x70x5x136
 
@@ -429,6 +434,7 @@ def plot_saliency(sal_map, i, inputs, targets, opt):
         relevant_indices = [i * (sal_shape[2]//5) for i in range(5)]
         image_name_formatter = lambda x: f'image_{x:05d}.jpg'
         image_names = [image_name_formatter(i) for i in relevant_indices]
+        print("image names = " + str(image_names))
         
         img_root_dir = "/home/ubuntu/data/processed_video/binary_data_embed"
         #kpt_root_dir = "/home/ubuntu/data/processed_video/keypoints_binary_nose"
@@ -457,17 +463,18 @@ def plot_saliency(sal_map, i, inputs, targets, opt):
                 keypoints = face_utils.shape_to_np(keypoints) # shape should be (68, 2)
                 
                 # Get saliency map
-                sals = sal_map[i][j] # numpy array of length 136
+                sals = avg_sal_map[i][j] # numpy array of length 136
                 sals = np.reshape(sals, (68, 2))
                 sals = np.mean(sals, axis=1) # shape is (68,)
                 
                 plt.subplot(2, len(image_names), j+1)
-                im = plt.imread(img_path)
-                implot = plt.imshow(im)
-                plt.scatter(keypoints[:,0], keypoints[:,1], c=sals, cmap=plt.cm.hot)
+                left, top, right, bottom = face.left(), face.top(), face.right(), face.bottom()
+                im = plt.imread(img_path) #[top:bottom, left:right]
+                #implot = plt.imshow(im)
+                plt.scatter(keypoints[:,0], keypoints[:,1], s=5, c=sals, cmap=plt.cm.hot)
                 plt.axis("off")
 
-            figpath = Path('/home/ubuntu/data/processed_video/salmaps/bin_phq/map_' + classname)     
+            figpath = Path('/home/ubuntu/data/processed_video/salmaps/bin_phq/map_' + classname + "_" + videoname)     
             plt.savefig(figpath)
 
         ## Get the original keypoints for those images

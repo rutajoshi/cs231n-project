@@ -17,21 +17,11 @@ class ImageEmbeddingsLoader(object):
         classname, videoname, filename = pieces[-3], pieces[-2], pieces[-1].split(".")[0]+".pt"
         #path = "/home/ubuntu/data/processed_video/gad7_multiclass_keypoints/" + classname + "/" + videoname + "/" + filename
         #path = "/home/ubuntu/data/processed_video/gad7_binary_keypoints/" + classname + "/" + videoname + "/" + filename
-        #path = "/home/ubuntu/data/processed_video/keypoints_black_nose/" + classname + "/" + videoname + "/" + filename
-        path = "/home/ubuntu/data/processed_video/keypoints_binary_nose/" + classname + "/" + videoname + "/" + filename
+        path = "/home/ubuntu/data/processed_video/keypoints_black_nose/" + classname + "/" + videoname + "/" + filename
+        #path = "/home/ubuntu/data/processed_video/keypoints_binary_nose/" + classname + "/" + videoname + "/" + filename
         img_embedding = torch.load(path).detach()
         img_embedding = torch.reshape(img_embedding, (1, 136)).type(torch.FloatTensor)
-        #print(img_embedding[0, 0:10])
-        #img_embedding = torch.flatten(img_embedding)
-        #print("img embedding shape = " + str(img_embedding.size()))
         return img_embedding
-        #with path.open('rb') as f:
-            #with Image.open(f) as img:
-            #    img = img.convert('RGB')
-            #    img_tensor = torch.from_numpy(np.copy(np.asarray(img)))
-            #    img_tensor = img_tensor.unsqueeze(0).permute(0, 3, 1, 2).float()
-            #    img_embedding = resnet(img_tensor)
-            #    return img_embedding
 
 class ImageLoaderPIL(object):
 
