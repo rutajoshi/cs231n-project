@@ -135,7 +135,8 @@ def parse_opts():
     parser.add_argument(
         '--multistep_milestones',
         #default=[50, 100, 150],
-        default=[50, 120, 200, 250],
+        #default=[50, 120, 200, 250],
+        default=[50, 100, 150, 200, 240],
         type=int,
         nargs='+',
         help='Milestones of LR scheduler. See documentation of MultistepLR.')
@@ -298,6 +299,19 @@ def parse_opts():
                         default=None,
                         type=Path,
                         help='path to the train labels - trainList.txt')
+
+    parser.add_argument('--mhq_data',
+                        default=None,
+                        type=str,
+                        help='(phq9|gad7)')
+
+    parser.add_argument('--weighted_sampling_norm',
+                        action='store_true',
+                        help='whether to use weighted sampling with normalization')
+
+    parser.add_argument('--weighted_sampling_no_norm',
+                        action='store_true',
+                        help='whether to use weighted sampling without normalization')
 
     args = parser.parse_args()
 

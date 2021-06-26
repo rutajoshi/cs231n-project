@@ -119,9 +119,11 @@ def generate_model(opt):
         #                 lstm_bidirectional=False, 
         #                 n_classes=opt.n_classes)
         model = EmbedNet(input_channels=136, # 512 for embedding, 136 for keypoints 
-                         n_channels=[128, 128, 128, 128, 128, 128, 128, 128, 128, 128], 
+                         #n_channels=[128, 128, 128, 128, 128, 128, 128, 128, 128, 128], 
+                         n_channels=[64, 64, 128, 128, 128, 128, 64], 
                          kernel_size=5, 
-                         dropout=0.6,
+                         #dropout=0.6,
+                         dropout=0.7,
                          lstm_n_hidden=32, 
                          lstm_n_layers=5, 
                          lstm_bidirectional=False, 

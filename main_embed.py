@@ -154,39 +154,42 @@ def get_train_utils(opt, model_parameters):
     else:
         train_sampler = None
 
-    # Weighted sampler
-    #all_labels = [x[1] for x in train_data]
-    #class_counts = [0 for i in range(opt.n_classes)]
-    #for label in all_labels:
-    #    class_counts[label] += 1
-    #N = sum(class_counts)
-    #weight_per_class = [0.] * opt.n_classes
-    #for i in range(opt.n_classes):
-    #    weight_per_class[i] = N / float(class_counts[i])
-    #weights = [0] * len(train_data) 
-    #for idx, val in enumerate(train_data):
-    #    weights[idx] = weight_per_class[val[1]]
+    if opt.weighted_sampling_no_norm:
+        # Weighted sampler without normalizing
+        all_labels = [x[1] for x in train_data]
+        class_counts = [0 for i in range(opt.n_classes)]
+        for label in all_labels:
+            class_counts[label] += 1
+        N = sum(class_counts)
+        weight_per_class = [0.] * opt.n_classes
+        for i in range(opt.n_classes):
+            weight_per_class[i] = N / float(class_counts[i])
+        weights = [0] * len(train_data) 
+        for idx, val in enumerate(train_data):
+            weights[idx] = weight_per_class[val[1]]
+        train_sampler = torch.utils.data.sampler.WeightedRandomSampler(weights, len(weights))
 
-    ## Weighted sampler - same as CE loss weights
-    #label_path = "/home/ubuntu/data/processed_video/binary_labels/trainlist01.txt"
-    ##label_path = "/home/ubuntu/data/processed_video/gad7_binary_labels/trainlist01.txt"
-    #if opt.n_classes == 4:
-    #    label_path = "/home/ubuntu/data/processed_video/mhq_local_labels/trainlist01.txt"
-    #    #label_path = "/home/ubuntu/data/processed_video/gad7_labels/trainlist01.txt"
-    #if opt.label_path is not None:
-    #    label_path = opt.label_path
-    #labels = []
-    ##with open("/home/ubuntu/data/processed_video/binary_labels/trainlist01.txt", 'r') as f:
-    #with open(label_path, 'r') as f:
-    #    labels = torch.IntTensor([int(line.split(" ")[1]) for line in f])
-    #if (len(labels) == 0):
-    #    print("LABELS IS EMPTY")
-    #weight_per_class = compute_class_weight(labels, opt.n_classes)
-    #weights = [0] * len(train_data)
-    #for idx, val in enumerate(train_data):
-    #    weights[idx] = weight_per_class[val[1]]
-
-    #train_sampler = torch.utils.data.sampler.WeightedRandomSampler(weights, len(weights))
+    if opt.weighted_sampling_norm:
+        # Weighted sampler - same as CE loss weights (with normalizing)
+        label_path = "/home/ubuntu/data/processed_video/phq9_binary_labels/trainlist01.txt"
+        if opt.mhq_data == "gad7":
+            label_path = "/home/ubuntu/data/processed_video/gad7_binary_labels/trainlist01.txt"
+        if opt.n_classes == 4:
+            label_path = "/home/ubuntu/data/processed_video/phq9_multiclass_labels/trainlist01.txt"
+            if opt.mhq_data == "gad7":
+                label_path = "/home/ubuntu/data/processed_video/gad7_multiclass_labels/trainlist01.txt"
+        if opt.label_path is not None:
+            label_path = opt.label_path
+        labels = []
+        with open(label_path, 'r') as f:
+            labels = torch.IntTensor([int(line.split(" ")[1]) for line in f])
+        if (len(labels) == 0):
+            print("LABELS IS EMPTY")
+        weight_per_class = compute_class_weight(labels, opt.n_classes)
+        weights = [0] * len(train_data)
+        for idx, val in enumerate(train_data):
+            weights[idx] = weight_per_class[val[1]]
+        train_sampler = torch.utils.data.sampler.WeightedRandomSampler(weights, len(weights))
 
     train_loader = torch.utils.data.DataLoader(train_data,
                                                batch_size=opt.batch_size,
@@ -428,16 +431,17 @@ def main_worker(index, opt):
     if opt.is_master_node:
         print(model)
     
-    label_path = "/home/ubuntu/data/processed_video/binary_labels/trainlist01.txt"
-    #label_path = "/home/ubuntu/data/processed_video/gad7_binary_labels/trainlist01.txt"
+    label_path = "/home/ubuntu/data/processed_video/phq9_binary_labels/trainlist01.txt"
+    if opt.mhq_data == "gad7":
+        label_path = "/home/ubuntu/data/processed_video/gad7_binary_labels/trainlist01.txt"
     if opt.n_classes == 4:
-        label_path = "/home/ubuntu/data/processed_video/mhq_local_labels/trainlist01.txt"
-        #label_path = "/home/ubuntu/data/processed_video/gad7_labels/trainlist01.txt"
+        label_path = "/home/ubuntu/data/processed_video/phq9_multiclass_labels/trainlist01.txt"
+        if opt.mhq_data == "gad7":
+            label_path = "/home/ubuntu/data/processed_video/gad7_multiclass_labels/trainlist01.txt"
     if opt.label_path is not None:
         label_path = opt.label_path
 
     labels = []
-    #with open("/home/ubuntu/data/processed_video/binary_labels/trainlist01.txt", 'r') as f:
     with open(label_path, 'r') as f:
         labels = torch.IntTensor([int(line.split(" ")[1]) for line in f])
     if (len(labels) == 0):
@@ -451,8 +455,8 @@ def main_worker(index, opt):
     #weights = torch.FloatTensor(weights)
 
     print("weights = " + str(weights))
-    #criterion = CrossEntropyLoss(weights).to(opt.device)
-    criterion = CrossEntropyLoss().to(opt.device)
+    criterion = CrossEntropyLoss(weights).to(opt.device)
+    #criterion = CrossEntropyLoss().to(opt.device)
     # ADDED for 231n
     #criterion = FocalLoss(gamma=opt.fl_gamma).to(opt.device)
 
