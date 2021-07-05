@@ -5,7 +5,7 @@ import functools
 import torch
 from torch.utils.data.dataloader import default_collate
 
-from .videodataset import VideoDataset
+from .videodataset_embed import VideoDataset
 
 # START OF RUTA'S CUSTOM COLLATE
 # Custom collate function for sizing issues in val data (Ruta)
@@ -14,6 +14,7 @@ def custom_collate_fn(batch):
     batch_clips, batch_targets = zip(*batch)
     
     batch_clips = [clip for multi_clips in batch_clips for clip in multi_clips]
+    print("batch targets = " + str(batch_targets))
     batch_targets = [
         target for multi_targets in batch_targets for target in multi_targets
     ]

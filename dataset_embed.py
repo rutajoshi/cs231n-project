@@ -21,7 +21,8 @@ def get_training_data(video_path,
                       file_type,
                       spatial_transform=None,
                       temporal_transform=None,
-                      target_transform=None):
+                      target_transform=None,
+                      mse_labels=None):
     assert dataset_name in [
         'mh', 'ntu', 'kinetics', 'activitynet', 'ucf101', 'hmdb51', 'mit'
     ]
@@ -70,7 +71,8 @@ def get_training_data(video_path,
                                      temporal_transform=temporal_transform,
                                      target_transform=target_transform,
                                      video_loader=loader,
-                                     video_path_formatter=video_path_formatter)
+                                     video_path_formatter=video_path_formatter,
+                                     mse_labels=mse_labels)
 
     return training_data
 
@@ -82,7 +84,8 @@ def get_validation_data(video_path,
                         file_type,
                         spatial_transform=None,
                         temporal_transform=None,
-                        target_transform=None):
+                        target_transform=None,
+                        mse_labels=None):
     assert dataset_name in [
         'mh', 'ntu', 'kinetics', 'activitynet', 'ucf101', 'hmdb51', 'mit'
     ]
@@ -119,15 +122,26 @@ def get_validation_data(video_path,
                                       video_loader=loader,
                                       video_path_formatter=video_path_formatter)
     else:
-        validation_data = VideoDatasetMultiClips(
-            video_path,
-            annotation_path,
-            'validation',
-            spatial_transform=spatial_transform,
-            temporal_transform=temporal_transform,
-            target_transform=target_transform,
-            video_loader=loader,
-            video_path_formatter=video_path_formatter)
+        #validation_data = VideoDatasetMultiClips(
+        #    video_path,
+        #    annotation_path,
+        #    'validation',
+        #    spatial_transform=spatial_transform,
+        #    temporal_transform=temporal_transform,
+        #    target_transform=target_transform,
+        #    video_loader=loader,
+        #    video_path_formatter=video_path_formatter,
+        #    mse_labels=mse_labels)
+
+        validation_data = VideoDataset(video_path,
+                                     annotation_path,
+                                     'validation',
+                                     spatial_transform=spatial_transform,
+                                     temporal_transform=temporal_transform,
+                                     target_transform=target_transform,
+                                     video_loader=loader,
+                                     video_path_formatter=video_path_formatter,
+                                     mse_labels=mse_labels)
 
     return validation_data, custom_collate_fn # ADDED BY RUTA
     #return validation_data, collate_fn
@@ -141,7 +155,8 @@ def get_inference_data(video_path,
                        inference_subset,
                        spatial_transform=None,
                        temporal_transform=None,
-                       target_transform=None):
+                       target_transform=None,
+                       mse_labels=None):
     assert dataset_name in [
         'mh', 'ntu', 'kinetics', 'activitynet', 'ucf101', 'hmdb51', 'mit'
     ]
@@ -188,16 +203,27 @@ def get_inference_data(video_path,
                                      video_path_formatter=video_path_formatter,
                                      is_untrimmed_setting=True)
     else:
-        inference_data = VideoDatasetMultiClips(
-            video_path,
-            annotation_path,
-            subset,
-            spatial_transform=spatial_transform,
-            temporal_transform=temporal_transform,
-            target_transform=target_transform,
-            video_loader=loader,
-            video_path_formatter=video_path_formatter,
-            target_type=['video_id', 'segment'])
+        #inference_data = VideoDatasetMultiClips(
+        #    video_path,
+        #    annotation_path,
+        #    subset,
+        #    spatial_transform=spatial_transform,
+        #    temporal_transform=temporal_transform,
+        #    target_transform=target_transform,
+        #    video_loader=loader,
+        #    video_path_formatter=video_path_formatter,
+        #    target_type=['video_id', 'segment'],
+        #    mse_labels=mse_labels)
+        
+        inference_data = VideoDataset(video_path,
+                                     annotation_path,
+                                     'inference',
+                                     spatial_transform=spatial_transform,
+                                     temporal_transform=temporal_transform,
+                                     target_transform=target_transform,
+                                     video_loader=loader,
+                                     video_path_formatter=video_path_formatter,
+                                     mse_labels=mse_labels)
 
     #return inference_data, collate_fn
     return inference_data, custom_collate_fn # ADDED BY RUTA

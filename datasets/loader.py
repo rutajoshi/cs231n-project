@@ -20,6 +20,7 @@ class ImageEmbeddingsLoader(object):
         #path = "/home/ubuntu/data/processed_video/phq9_multiclass_keypoints/" + classname + "/" + videoname + "/" + filename
         #path = "/home/ubuntu/data/processed_video/phq9_binary_keypoints/" + classname + "/" + videoname + "/" + filename
         img_embedding = torch.load(path).detach()
+        #print("img keypoints = " + str(img_embedding))
         img_embedding = torch.reshape(img_embedding, (1, 136)).type(torch.FloatTensor)
         return img_embedding
 

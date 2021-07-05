@@ -49,10 +49,12 @@ class VideoDataset(data.Dataset):
                                        root_path / label / video_id),
                  image_name_formatter=lambda x: f'image_{x:05d}.jpg',
                  #image_name_formatter=lambda x: f'img{x:05d}.jpg',
-                 target_type='label'):
+                 target_type='label',
+                 mse_labels=None):
         #print("root path = " + str(root_path))
         #print("annotation path = " + str(annotation_path))
 
+        self.mse_labels = mse_labels
         self.data, self.class_names = self.__make_dataset(
             root_path, annotation_path, subset, video_path_formatter)
 
@@ -93,6 +95,12 @@ class VideoDataset(data.Dataset):
             else:
                 label = 'test'
                 label_id = -1
+
+            ### Adding for MSE training
+            if self.mse_labels is not None:
+                video_id = video_ids[i]
+                label_id = self.mse_labels[video_id]
+            ###
 
             video_path = video_paths[i]
             if not video_path.exists():
@@ -149,6 +157,7 @@ class VideoDataset(data.Dataset):
         clip = self.__loading(path, frame_indices)
 
         if self.target_transform is not None:
+            print(self.target_transform)
             target = self.target_transform(target)
 
         return clip, target

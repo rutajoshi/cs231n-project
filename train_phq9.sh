@@ -42,7 +42,7 @@ python main_embed.py --root_path /home/ubuntu/data/processed_video \
         --weight_decay 1e-4 \
         --train_t_crop center \
 	--mhq_data phq9 \
-	--weighted_sampling_norm \
+	--weighted_sampling_no_norm \
         #--momentum 0.5 \
         #--fl_gamma 1
 

@@ -10,8 +10,8 @@ DATADIRS = []
 DATADIRS.append("/home/ubuntu/data/video")
 
 # MAKE THIS DIR before you run the script
-TARGET_DIR = '/home/ubuntu/data/processed_video/gad7_data' #"/Users/ruta/stanford/pac/mentalhealth/mhq_local_targets"
-LABEL_DIR = '/home/ubuntu/data/processed_video/gad7_labels' #"/Users/ruta/stanford/pac/mentalhealth/mhq_local_labels"
+TARGET_DIR = '/home/ubuntu/data/processed_video/phq9_data' #"/Users/ruta/stanford/pac/mentalhealth/mhq_local_targets"
+LABEL_DIR = '/home/ubuntu/data/processed_video/phq9_mse_labels' #"/Users/ruta/stanford/pac/mentalhealth/mhq_local_labels"
 
 ACTIONS_TO_KEEP = range(4)
 # 0-4 = minimal risk
@@ -31,8 +31,8 @@ def organize_files_by_class(dirname):
     # For each line in the csv, skipping the header, find the corresponding video file
     for index, row in csv_df.iterrows():
         patient_id = int(row['participant_id'])
-        #bucket = int(row['PHQ9_bucket'])
-        bucket = int(row['GAD7_bucket'])
+        bucket = int(row['PHQ9_bucket'])
+        #bucket = int(row['GAD7_bucket'])
         
         filename = "zoom_" + str(patient_id) + ".mp4"
         if patient_id < 34:

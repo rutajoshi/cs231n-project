@@ -4,8 +4,9 @@ import random
 import os
 
 import numpy as np
+import pandas as pd
 import torch
-from torch.nn import CrossEntropyLoss
+from torch.nn import CrossEntropyLoss, MSELoss
 from torch.optim import SGD, lr_scheduler, Adam
 import torch.multiprocessing as mp
 import torch.distributed as dist
@@ -85,6 +86,32 @@ def get_opt():
 
     return opt
 
+def get_mse_labels(opt):
+    label_dict = {}
+
+    if not opt.csv_path:
+        return None
+
+    # Read the labels csv into a df so that you can read the files in numerical order
+    csv_df = pd.read_csv(opt.csv_path)
+
+    # For each line in the csv, skipping the header, find the corresponding video file
+    for index, row in csv_df.iterrows():
+        patient_id = int(row['participant_id'])
+        score = int(row['PHQ9_score'])
+        if opt.mhq_data == 'gad7':
+            score = int(row['GAD7_score'])
+
+        video_id = "zoom_" + str(patient_id)
+        if patient_id < 34:
+            video_id = "inperson_" + str(patient_id)
+
+        label_dict[video_id] = score
+
+    print("Made label dict: " + str(len(label_dict)) + " labels")
+
+    return label_dict
+
 
 def resume_model(resume_path, arch, model):
     print('loading checkpoint {} model'.format(resume_path))
@@ -141,9 +168,11 @@ def get_train_utils(opt, model_parameters):
     temporal_transform.append(TemporalBeginCrop(opt.sample_duration))
     temporal_transform = TemporalCompose(temporal_transform)
 
+    mse_labels = get_mse_labels(opt)
+
     train_data = get_training_data(opt.video_path, opt.annotation_path,
                                    opt.dataset, opt.input_type, opt.file_type,
-                                   None, temporal_transform)
+                                   None, temporal_transform, None, mse_labels)
 
     print("Size of train data = " + str(len(train_data)))
     print("opt.batch_size = " + str(opt.batch_size))
@@ -268,12 +297,14 @@ def get_val_utils(opt):
     #                                           opt.input_type, opt.file_type,
     #                                           spatial_transform,
     #                                           temporal_transform)
+
+    mse_labels = get_mse_labels(opt)
     
     val_data, collate_fn = get_validation_data(opt.video_path,
                                                opt.annotation_path, opt.dataset,
                                                opt.input_type, opt.file_type,
                                                None,
-                                               None)
+                                               None, None, mse_labels)
     
     print("Size of val data = " + str(len(val_data)))
     print("opt.batch_size = " + str(opt.batch_size))
@@ -291,8 +322,8 @@ def get_val_utils(opt):
                                              num_workers=opt.n_threads,
                                              pin_memory=True,
                                              sampler=val_sampler,
-                                             worker_init_fn=worker_init_fn,
-                                             collate_fn=collate_fn)
+                                             worker_init_fn=worker_init_fn) #,
+                                             #collate_fn=collate_fn)
 
     if opt.is_master_node:
         val_logger = Logger(opt.result_path / 'val.log',
@@ -330,10 +361,12 @@ def get_inference_utils(opt):
     #    opt.file_type, opt.inference_subset, spatial_transform,
     #    temporal_transform)
 
+    mse_labels = get_mse_labels(opt)
+
     inference_data, collate_fn = get_inference_data(
         opt.video_path, opt.annotation_path, opt.dataset, opt.input_type,
         opt.file_type, opt.inference_subset, None,
-        None)
+        None, None, mse_labels)
     
     inference_loader = torch.utils.data.DataLoader(
         inference_data,
@@ -341,8 +374,8 @@ def get_inference_utils(opt):
         shuffle=False,
         num_workers=opt.n_threads,
         pin_memory=True,
-        worker_init_fn=worker_init_fn,
-        collate_fn=collate_fn)
+        worker_init_fn=worker_init_fn) #,
+        #collate_fn=collate_fn)
 
     return inference_loader, inference_data.class_names
 
@@ -455,8 +488,9 @@ def main_worker(index, opt):
     #    weights[i] = len(labels) / class_count
     #weights = torch.FloatTensor(weights)
 
-    print("weights = " + str(weights))
-    criterion = CrossEntropyLoss(weights).to(opt.device)
+    #print("weights = " + str(weights))
+    criterion = MSELoss().to(opt.device)
+    #criterion = CrossEntropyLoss(weights).to(opt.device)
     #criterion = CrossEntropyLoss().to(opt.device)
     # ADDED for 231n
     #criterion = FocalLoss(gamma=opt.fl_gamma).to(opt.device)

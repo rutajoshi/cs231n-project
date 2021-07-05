@@ -313,6 +313,11 @@ def parse_opts():
                         action='store_true',
                         help='whether to use weighted sampling without normalization')
 
+    parser.add_argument('--csv_path',
+                        default=None,
+                        type=str,
+                        help='path to all labels csv')
+
     args = parser.parse_args()
 
     return args

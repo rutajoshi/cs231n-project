@@ -35,10 +35,12 @@ def train_epoch(epoch,
         data_time.update(time.time() - end_time)
 
         targets = targets.to(device, non_blocking=True)
-        #print("a) targets size = " + str(targets.size()))
-        #print("b) inputs size = " + str(inputs.size()))
+        targets = targets.float()
+        print("a) targets size = " + str(targets.size()))
+        print("b) inputs size = " + str(inputs.size()))
         outputs = model(inputs)
-        #print("c) outputs size = " + str(outputs.size()))
+        print("c) outputs size = " + str(outputs.size()))
+        #print("outputs = " + str(outputs))
         loss = criterion(outputs, targets)
         acc = calculate_accuracy(outputs, targets)
 
