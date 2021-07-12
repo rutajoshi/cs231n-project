@@ -5,8 +5,9 @@ import sys
 
 import torch
 import torch.distributed as dist
+import numpy as np
 
-from utils import AverageMeter, calculate_accuracy
+from utils import AverageMeter, calculate_accuracy, calculate_weighted_accuracy
 
 
 def train_epoch(epoch,
@@ -19,7 +20,8 @@ def train_epoch(epoch,
                 epoch_logger,
                 batch_logger,
                 tb_writer=None,
-                distributed=False):
+                distributed=False,
+                class_weights=[1.0 for i in range(4)]):
     print('train at epoch {}'.format(epoch))
 
     model.train()
@@ -35,14 +37,18 @@ def train_epoch(epoch,
         data_time.update(time.time() - end_time)
 
         targets = targets.to(device, non_blocking=True)
-        targets = targets.float()
+        #targets = targets.float()
+        assert not np.any(np.isnan(inputs.detach().cpu().numpy()))
+        assert not (torch.any(torch.isnan(inputs)) or torch.any(torch.isinf(inputs)))
         print("a) targets size = " + str(targets.size()))
         print("b) inputs size = " + str(inputs.size()))
         outputs = model(inputs)
         print("c) outputs size = " + str(outputs.size()))
+        #print("inputs = " + str(inputs))
         #print("outputs = " + str(outputs))
         loss = criterion(outputs, targets)
-        acc = calculate_accuracy(outputs, targets)
+        #acc = calculate_accuracy(outputs, targets)
+        acc = calculate_weighted_accuracy(outputs, targets, class_weights)
 
         losses.update(loss.item(), inputs.size(0))
         accuracies.update(acc, inputs.size(0))

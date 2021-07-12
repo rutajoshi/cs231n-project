@@ -5,7 +5,7 @@ import sys
 import torch
 import torch.distributed as dist
 
-from utils import AverageMeter, calculate_accuracy, calc_ytrue_ypred, calculate_confusion_matrix
+from utils import AverageMeter, calculate_accuracy, calculate_weighted_accuracy, calc_ytrue_ypred, calculate_confusion_matrix
 
 
 def val_epoch(epoch,
@@ -16,7 +16,8 @@ def val_epoch(epoch,
               logger,
               tb_writer=None,
               distributed=False,
-              conf_mtx_dict={}):
+              conf_mtx_dict={},
+              class_weights=[1.0 for i in range(4)]):
     print('validation at epoch {}'.format(epoch))
 
     model.eval()
@@ -39,7 +40,8 @@ def val_epoch(epoch,
             targets = targets.to(device, non_blocking=True)
             outputs = model(inputs)
             loss = criterion(outputs, targets)
-            acc = calculate_accuracy(outputs, targets)
+            #acc = calculate_accuracy(outputs, targets)
+            acc = calculate_weighted_accuracy(outputs, targets, class_weights)
 
             # Added for 231n
             y_true, y_pred = calc_ytrue_ypred(outputs, targets)

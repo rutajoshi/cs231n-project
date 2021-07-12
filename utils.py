@@ -48,6 +48,29 @@ class Logger(object):
         self.log_file.flush()
 
 
+def calculate_weighted_accuracy(outputs, targets, class_weights):
+    with torch.no_grad():
+        batch_size = targets.size(0)
+
+        _, pred = outputs.topk(1, 1, largest=True, sorted=True)
+        pred = pred.t()
+
+        num_classes = len(class_weights)
+        class_counts_gt, class_counts_re = [0 for i in range(num_classes)], [0 for i in range(num_classes)]
+
+        #print("targets = " + str(targets))
+        #print("pred = " + str(pred))
+        for i in range(batch_size):
+            class_counts_gt[targets[i]] += 1
+            if targets[i] == pred[0][i]:
+                class_counts_re[targets[i]] += 1
+        class_wise_acc = []
+        for i in range(num_classes):
+            if class_counts_gt[i] > 0:
+                class_wise_acc.append(float(class_counts_re[i]) / class_counts_gt[i])
+        weighted_acc = sum(class_wise_acc) / len(class_wise_acc)
+        return weighted_acc
+
 def calculate_accuracy(outputs, targets):
     with torch.no_grad():
         batch_size = targets.size(0)

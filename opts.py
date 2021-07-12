@@ -170,7 +170,7 @@ def parse_opts():
                         type=int,
                         help='Number of total epochs to run')
     parser.add_argument('--n_val_samples',
-                        default=3,
+                        default=1, #3,
                         type=int,
                         help='Number of validation samples for each activity')
     parser.add_argument('--resume_path',

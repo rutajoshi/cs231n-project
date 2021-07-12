@@ -37,12 +37,23 @@ def inference(data_loader, model, result_path, class_names, no_average,
     with torch.no_grad():
         for i, (inputs, targets) in enumerate(data_loader):
             data_time.update(time.time() - end_time)
+            
+            inputs = inputs[0]
+            print("inputs = " + str(inputs))
+            print("targets = " + str(targets))
 
             video_ids, segments = zip(*targets)
+            segments = [[segments[0][0][k], segments[0][1][k]] for k in range(len(segments[0][0]))]
+            print(segments)
+            video_ids = video_ids[0]
+
             outputs = model(inputs)
             outputs = F.softmax(outputs, dim=1).cpu()
 
+            print("OUTPUTS SIZE = " + str(outputs.size()))
+
             for j in range(outputs.size(0)):
+                print("video_ids[j] = " + str(video_ids[j]))
                 results['results'][video_ids[j]].append({
                     'segment': segments[j],
                     'output': outputs[j]

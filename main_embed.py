@@ -86,6 +86,32 @@ def get_opt():
     return opt
 
 
+def get_mse_labels(opt):
+    label_dict = {}
+
+    if not opt.csv_path:
+        return None
+
+    # Read the labels csv into a df so that you can read the files in numerical order
+    csv_df = pd.read_csv(opt.csv_path)
+
+    # For each line in the csv, skipping the header, find the corresponding video file
+    for index, row in csv_df.iterrows():
+        patient_id = int(row['participant_id'])
+        score = int(row['PHQ9_score'])
+        if opt.mhq_data == 'gad7':
+            score = int(row['GAD7_score'])
+
+        video_id = "zoom_" + str(patient_id)
+        if patient_id < 34:
+            video_id = "inperson_" + str(patient_id)
+
+        label_dict[video_id] = score
+
+    print("Made label dict: " + str(len(label_dict)) + " labels")
+
+    return label_dict
+
 def resume_model(resume_path, arch, model):
     print('loading checkpoint {} model'.format(resume_path))
     checkpoint = torch.load(resume_path, map_location='cpu')
@@ -141,9 +167,11 @@ def get_train_utils(opt, model_parameters):
     temporal_transform.append(TemporalBeginCrop(opt.sample_duration))
     temporal_transform = TemporalCompose(temporal_transform)
 
+    mse_labels = get_mse_labels(opt)
+
     train_data = get_training_data(opt.video_path, opt.annotation_path,
                                    opt.dataset, opt.input_type, opt.file_type,
-                                   None, temporal_transform)
+                                   None, temporal_transform, None, mse_labels)
 
     print("Size of train data = " + str(len(train_data)))
     print("opt.batch_size = " + str(opt.batch_size))
@@ -175,10 +203,16 @@ def get_train_utils(opt, model_parameters):
         label_path = "/home/ubuntu/data/processed_video/phq9_binary_labels/trainlist01.txt"
         if opt.mhq_data == "gad7":
             label_path = "/home/ubuntu/data/processed_video/gad7_binary_labels/trainlist01.txt"
+        elif opt.mhq_data == "daicwoz":
+            label_path = "/home/ubuntu/data/daicwoz/daicwoz_binary_labels/trainlist01.txt"
+
         if opt.n_classes == 4:
             label_path = "/home/ubuntu/data/processed_video/phq9_multiclass_labels/trainlist01.txt"
             if opt.mhq_data == "gad7":
                 label_path = "/home/ubuntu/data/processed_video/gad7_multiclass_labels/trainlist01.txt"
+            elif opt.mhq_data == "daicwoz":
+                label_path = "/home/ubuntu/data/daicwoz/daicwoz_multiclass_labels/trainlist01.txt"
+
         if opt.label_path is not None:
             label_path = opt.label_path
         labels = []
@@ -263,17 +297,23 @@ def get_val_utils(opt):
         TemporalEvenCrop(opt.sample_duration, opt.n_val_samples))
     temporal_transform = TemporalCompose(temporal_transform)
 
+    temporal_transform = []
+    temporal_transform.append(TemporalBeginCrop(opt.sample_duration))
+    temporal_transform = TemporalCompose(temporal_transform)
+
     #val_data, collate_fn = get_validation_data(opt.video_path,
     #                                           opt.annotation_path, opt.dataset,
     #                                           opt.input_type, opt.file_type,
     #                                           spatial_transform,
     #                                           temporal_transform)
     
+    mse_labels = get_mse_labels(opt)
+
     val_data, collate_fn = get_validation_data(opt.video_path,
                                                opt.annotation_path, opt.dataset,
                                                opt.input_type, opt.file_type,
                                                None,
-                                               None)
+                                               temporal_transform, None, mse_labels)
     
     print("Size of val data = " + str(len(val_data)))
     print("opt.batch_size = " + str(opt.batch_size))
@@ -291,8 +331,8 @@ def get_val_utils(opt):
                                              num_workers=opt.n_threads,
                                              pin_memory=True,
                                              sampler=val_sampler,
-                                             worker_init_fn=worker_init_fn,
-                                             collate_fn=collate_fn)
+                                             worker_init_fn=worker_init_fn)#,
+                                             #collate_fn=collate_fn)
 
     if opt.is_master_node:
         val_logger = Logger(opt.result_path / 'val.log',
@@ -325,15 +365,23 @@ def get_inference_utils(opt):
         SlidingWindow(opt.sample_duration, opt.inference_stride))
     temporal_transform = TemporalCompose(temporal_transform)
 
+    temporal_transform = []
+    temporal_transform.append(TemporalBeginCrop(opt.sample_duration))
+    temporal_transform = TemporalCompose(temporal_transform)
+
     #inference_data, collate_fn = get_inference_data(
     #    opt.video_path, opt.annotation_path, opt.dataset, opt.input_type,
     #    opt.file_type, opt.inference_subset, spatial_transform,
     #    temporal_transform)
 
+    mse_labels = get_mse_labels(opt)
+
     inference_data, collate_fn = get_inference_data(
         opt.video_path, opt.annotation_path, opt.dataset, opt.input_type,
         opt.file_type, opt.inference_subset, None,
-        None)
+        temporal_transform, None, mse_labels)
+
+    print("Got inference data")
     
     inference_loader = torch.utils.data.DataLoader(
         inference_data,
@@ -341,8 +389,8 @@ def get_inference_utils(opt):
         shuffle=False,
         num_workers=opt.n_threads,
         pin_memory=True,
-        worker_init_fn=worker_init_fn,
-        collate_fn=collate_fn)
+        worker_init_fn=worker_init_fn) #,
+        #collate_fn=collate_fn)
 
     return inference_loader, inference_data.class_names
 
@@ -456,8 +504,8 @@ def main_worker(index, opt):
     #weights = torch.FloatTensor(weights)
 
     print("weights = " + str(weights))
-    criterion = CrossEntropyLoss(weights).to(opt.device)
-    #criterion = CrossEntropyLoss().to(opt.device)
+    #criterion = CrossEntropyLoss(weights).to(opt.device)
+    criterion = CrossEntropyLoss().to(opt.device)
     # ADDED for 231n
     #criterion = FocalLoss(gamma=opt.fl_gamma).to(opt.device)
 
@@ -492,7 +540,7 @@ def main_worker(index, opt):
             current_lr = get_lr(optimizer)
             train_epoch(i, train_loader, model, criterion, optimizer,
                         opt.device, current_lr, train_logger,
-                        train_batch_logger, tb_writer, opt.distributed)
+                        train_batch_logger, tb_writer, opt.distributed, class_weights=weights)
 
             if i % opt.checkpoint == 0 and opt.is_master_node:
                 save_file_path = opt.result_path / 'save_{}.pth'.format(i)
@@ -503,7 +551,8 @@ def main_worker(index, opt):
             prev_val_loss = val_epoch(i, val_loader, model, criterion,
                                       opt.device, val_logger, tb_writer,
                                       opt.distributed, 
-                                      conf_mtx_dict) # ADDED for CS231n
+                                      conf_mtx_dict, # ADDED for CS231n
+                                      class_weights=weights)
 
         # ADDED for 231n - uncomment if using cross entropy loss
         if not opt.no_train and opt.lr_scheduler == 'multistep':

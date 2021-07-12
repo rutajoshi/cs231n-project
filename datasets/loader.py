@@ -15,13 +15,26 @@ class ImageEmbeddingsLoader(object):
         # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
         pieces = str(path).split("/")
         classname, videoname, filename = pieces[-3], pieces[-2], pieces[-1].split(".")[0]+".pt"
-        path = "/home/ubuntu/data/processed_video/gad7_multiclass_keypoints/" + classname + "/" + videoname + "/" + filename
+        
+        path = "/home/ubuntu/data/processed_video/phq9_binary_keypoints_3d/" + classname + "/" + videoname + "/" + filename
+        #path = "/home/ubuntu/data/processed_video/phq9_multiclass_keypoints_3d/" + classname + "/" + videoname + "/" + filename
+        
+        #path = "/home/ubuntu/data/daicwoz_1fps/daicwoz_binary_keypts_3d/" + classname + "/" + videoname + "/" + filename
+        #path = "/home/ubuntu/data/daicwoz_1fps/daicwoz_multiclass_keypts_3d/" + classname + "/" + videoname + "/" + filename
+        
+        #path = "/home/ubuntu/data/daicwoz/daicwoz_multiclass_keypts/" + classname + "/" + videoname + "/" + filename
+        #path = "/home/ubuntu/data/daicwoz/daicwoz_binary_keypts/" + classname + "/" + videoname + "/" + filename
+        
+        #path = "/home/ubuntu/data/processed_video/gad7_multiclass_keypoints/" + classname + "/" + videoname + "/" + filename
         #path = "/home/ubuntu/data/processed_video/gad7_binary_keypoints/" + classname + "/" + videoname + "/" + filename
+        
         #path = "/home/ubuntu/data/processed_video/phq9_multiclass_keypoints/" + classname + "/" + videoname + "/" + filename
         #path = "/home/ubuntu/data/processed_video/phq9_binary_keypoints/" + classname + "/" + videoname + "/" + filename
         img_embedding = torch.load(path).detach()
         #print("img keypoints = " + str(img_embedding))
-        img_embedding = torch.reshape(img_embedding, (1, 136)).type(torch.FloatTensor)
+        
+        #img_embedding = torch.reshape(img_embedding, (1, 136)).type(torch.FloatTensor)
+        img_embedding = torch.reshape(img_embedding, (1, 204)).type(torch.FloatTensor)
         return img_embedding
 
 class ImageLoaderPIL(object):

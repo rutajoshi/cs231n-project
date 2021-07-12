@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+import numpy as np
 
 from tcn_embed2 import TCN
 
@@ -17,7 +18,7 @@ class EmbedNet(nn.Module):
         self.regressor = n_classes == 1
 
     def forward(self, inputs):
-        #print("inputs size embednet = " + str(inputs.size()))
+        #print("inputs size embednet = " + str(np.array(inputs)))
         inputs = inputs.permute(0, 1, 3, 2)
         inputs = inputs[:, 0, :, :]
         embeds = self.tcn(inputs)

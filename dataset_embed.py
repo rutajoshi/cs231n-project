@@ -7,9 +7,11 @@ from datasets.videodataset_multiclips_embed import (VideoDatasetMultiClips,
 from datasets.activitynet import ActivityNet
 from datasets.loader import VideoLoader, VideoLoaderHDF5, VideoLoaderFlowHDF5
 
-
 def image_name_formatter(x):
-    return f'image_{x:05d}.jpg'
+    return f'image_{x:05d}.pt'
+
+#def image_name_formatter(x):
+#    return f'image_{x:05d}.jpg'
 
 #def image_name_formatter(x):
 #    return f'img{x:05d}.jpg'
@@ -24,7 +26,7 @@ def get_training_data(video_path,
                       target_transform=None,
                       mse_labels=None):
     assert dataset_name in [
-        'mh', 'ntu', 'kinetics', 'activitynet', 'ucf101', 'hmdb51', 'mit'
+        'mh', 'daicwoz', 'ntu', 'kinetics', 'activitynet', 'ucf101', 'hmdb51', 'mit'
     ]
     assert input_type in ['rgb', 'flow']
     assert file_type in ['jpg', 'hdf5']
@@ -87,7 +89,7 @@ def get_validation_data(video_path,
                         target_transform=None,
                         mse_labels=None):
     assert dataset_name in [
-        'mh', 'ntu', 'kinetics', 'activitynet', 'ucf101', 'hmdb51', 'mit'
+        'mh', 'daicwoz', 'ntu', 'kinetics', 'activitynet', 'ucf101', 'hmdb51', 'mit'
     ]
     assert input_type in ['rgb', 'flow']
     assert file_type in ['jpg', 'hdf5']
@@ -158,7 +160,7 @@ def get_inference_data(video_path,
                        target_transform=None,
                        mse_labels=None):
     assert dataset_name in [
-        'mh', 'ntu', 'kinetics', 'activitynet', 'ucf101', 'hmdb51', 'mit'
+        'mh', 'daicwoz', 'ntu', 'kinetics', 'activitynet', 'ucf101', 'hmdb51', 'mit'
     ]
     assert input_type in ['rgb', 'flow']
     assert file_type in ['jpg', 'hdf5']
@@ -203,27 +205,29 @@ def get_inference_data(video_path,
                                      video_path_formatter=video_path_formatter,
                                      is_untrimmed_setting=True)
     else:
-        #inference_data = VideoDatasetMultiClips(
-        #    video_path,
-        #    annotation_path,
-        #    subset,
-        #    spatial_transform=spatial_transform,
-        #    temporal_transform=temporal_transform,
-        #    target_transform=target_transform,
-        #    video_loader=loader,
-        #    video_path_formatter=video_path_formatter,
-        #    target_type=['video_id', 'segment'],
-        #    mse_labels=mse_labels)
-        
-        inference_data = VideoDataset(video_path,
-                                     annotation_path,
-                                     'inference',
-                                     spatial_transform=spatial_transform,
-                                     temporal_transform=temporal_transform,
-                                     target_transform=target_transform,
-                                     video_loader=loader,
-                                     video_path_formatter=video_path_formatter,
-                                     mse_labels=mse_labels)
+        inference_data = VideoDatasetMultiClips(
+            video_path,
+            annotation_path,
+            subset,
+            spatial_transform=spatial_transform,
+            temporal_transform=temporal_transform,
+            target_transform=target_transform,
+            video_loader=loader,
+            video_path_formatter=video_path_formatter,
+            target_type=['video_id', 'segment'],
+            mse_labels=mse_labels)
+
+        #inference_data = VideoDataset(video_path,
+        #                             annotation_path,
+        #                             subset,
+        #                             spatial_transform=spatial_transform,
+        #                             temporal_transform=temporal_transform,
+        #                             target_transform=target_transform,
+        #                             video_loader=loader,
+        #                             video_path_formatter=video_path_formatter,
+        #                             mse_labels=mse_labels)
+
+        print("Len(inference_data) = " + str(len(inference_data)))
 
     #return inference_data, collate_fn
     return inference_data, custom_collate_fn # ADDED BY RUTA

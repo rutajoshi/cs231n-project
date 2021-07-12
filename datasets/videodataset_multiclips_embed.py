@@ -11,6 +11,7 @@ from .videodataset_embed import VideoDataset
 # Custom collate function for sizing issues in val data (Ruta)
 import numpy as np
 def custom_collate_fn(batch):
+    print(batch)
     batch_clips, batch_targets = zip(*batch)
     
     batch_clips = [clip for multi_clips in batch_clips for clip in multi_clips]

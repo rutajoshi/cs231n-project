@@ -47,7 +47,8 @@ class VideoDataset(data.Dataset):
                  video_loader=None,
                  video_path_formatter=(lambda root_path, label, video_id:
                                        root_path / label / video_id),
-                 image_name_formatter=lambda x: f'image_{x:05d}.jpg',
+                 image_name_formatter=lambda x: f'image_{x:05d}.pt',
+                 #image_name_formatter=lambda x: f'image_{x:05d}.jpg',
                  #image_name_formatter=lambda x: f'img{x:05d}.jpg',
                  target_type='label',
                  mse_labels=None):
@@ -112,7 +113,7 @@ class VideoDataset(data.Dataset):
             if segment[1] == 1:
                 print("Segment is " + str(segment))
                 continue
-
+            
             frame_indices = list(range(segment[0], segment[1]))
             sample = {
                 'video': video_path,

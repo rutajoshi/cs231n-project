@@ -44,14 +44,14 @@ def convert_mh_csv_to_json(label_csv_path, train_csv_path, val_csv_path, test_cs
     labels = load_labels(label_csv_path)
     train_database = convert_csv_to_dict(train_csv_path, 'training')
     val_database = convert_csv_to_dict(val_csv_path, 'validation')
-    test_database = convert_csv_to_dict(test_csv_path, 'testing')
+    #test_database = convert_csv_to_dict(test_csv_path, 'testing')
 
     dst_data = {}
     dst_data['labels'] = labels
     dst_data['database'] = {}
     dst_data['database'].update(train_database)
     dst_data['database'].update(val_database)
-    dst_data['database'].update(test_database)
+    #dst_data['database'].update(test_database)
 
     for k, v in dst_data['database'].items():
         if v['annotations'] is not None:
