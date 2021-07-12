@@ -33,7 +33,14 @@ import inference
 
 # ADDED for 231n
 import csv
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 from focalloss import FocalLoss, compute_class_weight
+
+#ACTION_NAMES = ["minimal", "mildLow", "modMedium", "severeHigh"]
+#ACTION_DICT = {"minimal" : 0, "mildLow" : 1, "modMedium" : 2, "severeHigh" : 3}
+ACTION_NAMES = ["minimal", "notable"]
+ACTION_DICT = {"minimal" : 0, "notable" : 1}
 
 def json_serial(obj):
     if isinstance(obj, Path):
@@ -427,7 +434,7 @@ def get_saliency_map(X, y, model, opt):
     model.eval()
 
     # Make input tensors require gradient
-    print("X shape = " + str(X.shape))
+    print("X shape = " + str(X.shape)) #204 for 3d, 136 for 2d
     X.requires_grad_()
     saliency = None
 
@@ -451,8 +458,7 @@ def get_saliency_map(X, y, model, opt):
     print("saliency = " + str(saliency.shape))
     return saliency
 
-
-def plot_saliency(sal_map, i, inputs, targets, opt):
+def plot_saliency_3d(sal_map, i, inputs, targets, opt):
     # Use matplotlib to make one figure showing the average image for each segment
     # for the video and the saliency map for each segment of the video
 
@@ -463,7 +469,100 @@ def plot_saliency(sal_map, i, inputs, targets, opt):
     # Plot each of the 5 images with corresponding heatmap of saliency
 
     # --- MH ---
-    # saliency map has shape 5x351x136 --> 5 is batch size, 351 images per video, each video gets a 1x136 keypoint vector
+    # saliency map has shape 5x351x204 --> 5 is batch size, 351 images per video, each video gets a 1x204 keypoint vector
+    # y is the labels --> shape 5
+    # Cut the input into 5 segments manually --> 5x70x5x204
+    # average over 70 images to get 5x5x204
+    # plot those 5 images from the original video, with the keypoints overlayed
+
+    # Get the labels as a json dict
+    with opt.annotation_path.open('r') as f:
+        data = json.load(f)
+
+    with torch.no_grad():
+        sal_map = sal_map.numpy()
+        print("Original sal map shape = " + str(sal_map.shape))
+        # 1. cut the saliency map into 5 segments
+        # 1. Average over saliency map dimensions
+        sal_map = np.expand_dims(sal_map, axis=1)[:,:,:-1,:] # remove 351st image
+        sal_shape = sal_map.shape
+        print("Sal shape = " + str(sal_shape)) # 13x1x350x204
+        sal_map = np.reshape(sal_map, (sal_shape[0], sal_shape[2]//5, 5, sal_shape[3])) # should be 13x70x5x204
+
+        # Average over each segment
+        avg_sal_map = np.mean(sal_map, axis=1) # 13x5x204
+
+        # 3. Convert targets into labels
+        labels = []
+        for elem in targets:
+            label = data['database'][elem[0]]["annotations"]["label"]
+            label = ACTION_DICT[label]
+            labels.append(label)
+        y = torch.LongTensor(labels).to(opt.device)
+        print("y shape = " + str(y.shape))
+
+        # For each video, find the 5 relevant images (img 0, 70, 140, 210, 280)
+        relevant_indices = [i * (sal_shape[2]//5) for i in range(5)]
+        image_name_formatter = lambda x: f'image_{x:05d}.pt' #keypoint path
+        image_names = [image_name_formatter(i) for i in relevant_indices]
+        print("image names = " + str(image_names))
+
+        #img_root_dir = "/home/ubuntu/data/processed_video/binary_data_embed"
+        kpt_root_dir = "/home/ubuntu/data/processed_video/phq9_binary_keypoints_3d"
+        
+        # For each element in targets, get the relevant image paths and keypoint paths
+        # For each relevant image, get the saliency map
+        # Plot the image in the background, then scatter the keypoints using saliency as heatmap color
+        for i in range(len(targets)):
+            elem = targets[i]
+            videoname = elem[0]
+            classname = data['database'][videoname]["annotations"]["label"]
+            #img_dirpath = img_root_dir + "/" + classname + "/" + videoname
+            kpt_dirpath = kpt_root_dir + "/" + classname + "/" + videoname
+            for j in range(len(image_names)):
+                img_name = image_names[j]
+                kpt_path = kpt_dirpath + "/" + img_name
+
+                # Get keypoints
+                keypoints = torch.load(kpt_path).detach()
+                keypoints = torch.reshape(keypoints, (68, 3)).type(torch.FloatTensor) 
+                keypoints = keypoints.numpy()
+                #print("keypoint shape = " + str(keypoints.shape))
+                print("keypoints = " + str(keypoints))
+
+                # Get saliency map
+                sals = avg_sal_map[i][j] # numpy array of length 204
+                sals = np.reshape(sals, (68, 3))
+                sals = np.mean(sals, axis=1) # shape is (68,)
+                #print("sals shape = " + str(sals.shape))
+
+                # Plot 3D
+                fig = plt.figure()
+                ax = Axes3D(fig)
+                ax.scatter(keypoints[:,0], keypoints[:,1], keypoints[:,2], s=5)
+
+                #plt.subplot(2, len(image_names), j+1)
+                #left, top, right, bottom = face.left(), face.top(), face.right(), face.bottom()
+                #plt.scatter(keypoints[:,0], keypoints[:,1], s=5, c=sals, cmap=plt.cm.hot)
+                #plt.axis("off")
+
+                figpath = Path('/home/ubuntu/data/processed_video/salmaps/bin_phq/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
+                plt.savefig(figpath)
+    return None
+
+
+def plot_saliency_2d(sal_map, i, inputs, targets, opt):
+    # Use matplotlib to make one figure showing the average image for each segment
+    # for the video and the saliency map for each segment of the video
+
+    # For a video with 5 segments which results in sal_map 5x16x112x112
+    # We avg over the 16 saliency maps (one for each image in the segment) to get 5x112x112
+    # inputs has shape 5x3x16x112x112 --> this is the segment of input images
+    # Avg over 16 images in the segment and take max over 3 channels of each image
+    # Plot each of the 5 images with corresponding heatmap of saliency
+
+    # --- MH ---
+    # saliency map has shape 5x351x136/204 --> 5 is batch size, 351 images per video, each video gets a 1x136/204 keypoint vector
     # y is the labels --> shape 5
     # Cut the input into 5 segments manually --> 5x70x5x136
     # average over 70 images to get 5x5x136
@@ -596,7 +695,7 @@ def compute_saliency_maps(model, opt):
     for i, (inputs, targets) in enumerate(tiny_loader):
         sal_map = get_saliency_map(inputs, targets, model, opt)
         # Plot the saliency map using matplotlib and save to a file
-        plot_saliency(sal_map, i, inputs, targets, opt)
+        plot_saliency_3d(sal_map, i, inputs, targets, opt)
         saliency_maps.append(sal_map)
 
     return saliency_maps
@@ -729,6 +828,7 @@ def main_worker(index, opt):
                             opt.output_topk)
 
     # ADDED for CS231n
+    compute_saliency_maps(model, opt)
     conf_mtx_file = csv.writer(open("conf_mtxs.csv", "w+"))
     for key, val in conf_mtx_dict.items():
         conf_mtx_file.writerow([key, val])

@@ -101,18 +101,26 @@ def get_dlib_keypoint_features_3D(src_root_path, dst_root_path):
                 img = cv2.imread(str(full_img_path))
                 #gray_img = ImageOps.grayscale(img)
                 gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-                faces = detector(gray_img, 1)
-                #print("faces = " + str(faces))
-                height, width = gray_img.shape
-                face = dlib.rectangle(left=0, top=0, right=width-1, bottom=height-1)
-                if (len(faces) > 0):
-                    face = faces[0]
-                keypoints = predictor(gray_img, face)
-                keypoints = face_utils.shape_to_np(keypoints)
+                gray_img = cv2.resize(gray_img, (1600, 800))
+                try:
+                    faces = detector(gray_img, 1)
+                    #print("faces = " + str(faces))
+                    height, width = gray_img.shape
+                    #print("height = " + str(height) + ", width = " + str(width)) 
+                    face = dlib.rectangle(left=0, top=0, right=width-1, bottom=height-1)
+                    if (len(faces) > 0):
+                        #print("couldn't find a face")
+                        face = faces[0]
+                    keypoints = predictor(gray_img, face)
+                    keypoints = face_utils.shape_to_np(keypoints)
+                except:
+                    print("Could not find 2d keypoints for " + str(full_img_path))
+                    continue
 
                 # Convert 2d keypoints to 3d keypoints
                 (vertices, mesh_plotting, Ind, rotation_angle) = landmarks_3d_fitting(keypoints, height, width)
                 frame_landmarks_3d = vertices[np.int32(Ind),0:3]
+                #print(frame_landmarks_3d)
                 
                 # Center the keypoints at the nose, then normalize
                 #keypoints = nose_center_normalize(keypoints, width, height)

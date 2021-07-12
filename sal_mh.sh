@@ -1,14 +1,14 @@
-python saliency.py --root_path /home/ubuntu/data/processed_video \
-	--video_path binary_data_embed \
-	--annotation_path binary_data_embed/mh_01.json \
-	--result_path results_keypoints_bin_cenw \
+python saliency2.py --root_path /home/ubuntu/data/processed_video \
+	--video_path phq9_binary_keypoints_3d \
+	--annotation_path phq9_binary_keypoints_3d/mh_01.json \
+	--result_path results_phq9_binary_1fps3d \
 	--dataset mh \
 	--n_classes 2 \
-	--resume_path results_keypoints_bin_cenw/save_300.pth \
+	--resume_path results_phq9_binary_1fps3d/save_90.pth \
 	--model embednet \
-	--batch_size 5 \
+	--batch_size 16 \
         --n_threads 4 \
-        --checkpoint 5 \
+        --checkpoint 30 \
         --inference \
         --inference_subset val \
         --no_train \
