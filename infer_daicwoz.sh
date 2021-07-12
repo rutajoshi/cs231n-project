@@ -1,0 +1,35 @@
+python main_embed.py --root_path /home/ubuntu/data/daicwoz_1fps \
+        --video_path daicwoz_binary_keypts_3d \
+        --annotation_path daicwoz_binary_keypts_3d/mh_01.json \
+        --result_path results_binary \
+        --dataset daicwoz \
+        --n_classes 2 \
+        --resume_path results_binary/save_60.pth \
+        --model embednet \
+        --batch_size 16 \
+        --n_threads 4 \
+        --checkpoint 5 \
+	--sample_duration 400 \
+        --inference \
+        --inference_subset train \
+        --no_train \
+        --no_val \
+        --mhq_data daicwoz
+
+python main_embed.py --root_path /home/ubuntu/data/daicwoz_1fps \
+        --video_path daicwoz_binary_keypts_3d \
+        --annotation_path daicwoz_binary_keypts_3d/mh_01.json \
+        --result_path results_binary \
+        --dataset daicwoz \
+        --n_classes 2 \
+        --resume_path results_binary/save_60.pth \
+        --model embednet \
+        --batch_size 16 \
+        --n_threads 4 \
+        --checkpoint 5 \
+	--sample_duration 400 \
+        --inference \
+        --inference_subset val \
+        --no_train \
+        --no_val \
+        --mhq_data daicwoz
