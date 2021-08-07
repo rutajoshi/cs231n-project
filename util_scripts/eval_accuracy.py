@@ -23,11 +23,16 @@ def load_ground_truth(ground_truth_path, subset):
         subset = "training"
     elif (subset == "val"):
         subset = "validation"
+    elif (subset == "test"):
+        subset = "testing"
+    elif (subset == "valtest"):
+        subset == "valtest"
 
     ground_truth = []
     for video_id, v in data['database'].items():
         if subset != v['subset']:
-            continue
+            if not (subset == "valtest" and v['subset'] in ["validation", "testing"]):
+                continue
         this_label = v['annotations']['label']
         ground_truth.append((video_id, class_labels_map[this_label]))
 

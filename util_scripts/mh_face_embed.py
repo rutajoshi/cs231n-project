@@ -13,7 +13,10 @@ from imutils import face_utils
 import dlib
 import eos
 from joblib import Parallel, delayed
-from subprocess import PIPE #added by Ruta
+from subprocess import PIPE 
+
+import face_alignment
+from skimage import io
 
 image_name_formatter=lambda x: f'image_{x:05d}.jpg'
 #resnet = InceptionResnetV1(pretrained='vggface2').eval()
@@ -76,6 +79,35 @@ def nose_center_normalize(keypoints, width, height):
     new_keypoints = new_keypoints / max_distance
     return new_keypoints
 
+def get_fa_keypoint_features_3D(src_root_path, dst_root_path):
+    # Use face_alignment package to get 3d keypoints for each image
+    fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._3D, flip_input=False)
+    for class_folder in sorted(src_root_path.iterdir()):
+        class_name = str(class_folder).split("/")[-1]
+        if (class_name == "mh_01.json"):
+            continue
+        print("Making a classdir for class: " + str(class_name))
+        os.mkdir(dst_root_path / class_name)
+        for video_folder in sorted(class_folder.iterdir()):
+            video_name = str(video_folder).split("/")[-1]
+            os.mkdir(dst_root_path / class_name / video_name)
+            for image_file in sorted(video_folder.iterdir()):
+                image_name = str(image_file).split("/")[-1]
+                full_img_path = src_root_path / class_name / video_name / image_name
+
+                img = io.imread(full_img_path)
+                keypoints = fa.get_landmarks(img)
+                if not keypoints:
+                    keypoints = [np.zeros((68,3))]
+                keypoints = np.array(keypoints[0])
+                #print(keypoints.shape)
+
+                img_embedding = torch.from_numpy(keypoints)
+
+                outfile = str(dst_root_path / class_name / video_name / image_name.split(".")[0]) + ".pt"
+                torch.save(img_embedding, outfile)
+        print("Done with class: " + str(class_name))
+
 def get_dlib_keypoint_features_3D(src_root_path, dst_root_path):
     # Get the face detector and predictor from dlib
     detector = dlib.get_frontal_face_detector()
@@ -101,7 +133,8 @@ def get_dlib_keypoint_features_3D(src_root_path, dst_root_path):
                 img = cv2.imread(str(full_img_path))
                 #gray_img = ImageOps.grayscale(img)
                 gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-                gray_img = cv2.resize(gray_img, (1600, 800))
+                #gray_img = cv2.resize(gray_img, (1600, 2800))
+                #gray_img = cv2.resize(gray_img, (100, 170))
                 try:
                     faces = detector(gray_img, 1)
                     #print("faces = " + str(faces))
@@ -111,8 +144,11 @@ def get_dlib_keypoint_features_3D(src_root_path, dst_root_path):
                     if (len(faces) > 0):
                         #print("couldn't find a face")
                         face = faces[0]
+                    else:
+                        print("couldn't find a face")
                     keypoints = predictor(gray_img, face)
                     keypoints = face_utils.shape_to_np(keypoints)
+
                 except:
                     print("Could not find 2d keypoints for " + str(full_img_path))
                     continue
@@ -121,12 +157,18 @@ def get_dlib_keypoint_features_3D(src_root_path, dst_root_path):
                 (vertices, mesh_plotting, Ind, rotation_angle) = landmarks_3d_fitting(keypoints, height, width)
                 frame_landmarks_3d = vertices[np.int32(Ind),0:3]
                 #print(frame_landmarks_3d)
+                #print(Ind)
                 
                 # Center the keypoints at the nose, then normalize
                 #keypoints = nose_center_normalize(keypoints, width, height)
 
                 #print("keypoints type = " + str(type(keypoints)))
                 img_embedding = torch.from_numpy(frame_landmarks_3d)
+
+                # Remove repeats
+                #print("Before shape = " + str(img_embedding.shape))
+                img_embedding = np.unique([tuple(row) for row in img_embedding], axis=0)
+                #print("After shape = " + str(img_embedding.shape))
                 
                 outfile = str(dst_root_path / class_name / video_name / image_name.split(".")[0]) + ".pt"
                 #with open(outfile, mode="w+") as embedfile:
@@ -134,7 +176,7 @@ def get_dlib_keypoint_features_3D(src_root_path, dst_root_path):
                 torch.save(img_embedding, outfile)
         print("Done with class: " + str(class_name))
 
-def get_dlib_keypoint_features(src_root_path, dst_root_path):
+def get_dlib_keypoint_features_2D(src_root_path, dst_root_path):
     # Get the face detector and predictor from dlib
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")

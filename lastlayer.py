@@ -39,6 +39,14 @@ def inference(data_loader, model, result_path, class_names, no_average,
             data_time.update(time.time() - end_time)
 
             video_ids, segments = zip(*targets)
+            video_ids, segments = zip(*targets)
+            segments = [[segments[0][0][k], segments[0][1][k]] for k in range(len(segments[0][0]))]
+            #print(segments)
+            video_ids = video_ids[0]
+
+            inputs = inputs[0]
+            #print("inputs = " + str(inputs))
+            #print("targets = " + str(targets))
             outputs = model(inputs)
             #outputs = F.softmax(outputs, dim=1).cpu()
 

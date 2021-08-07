@@ -1,9 +1,35 @@
 
-python -m util_scripts.eval_accuracy ~/data/processed_video/phq9_binary_keypoints_3d/mh_01.json ~/data/processed_video/results_phq9_binary_1fps3d/train.json --subset train -k 1 --ignore
-python -m util_scripts.eval_accuracy ~/data/processed_video/phq9_binary_keypoints_3d/mh_01.json ~/data/processed_video/results_phq9_binary_1fps3d/val.json --subset val -k 1 --ignore
+### Binary PHQ9 ###
+#python -m util_scripts.eval_accuracy ~/data/processed_video/phq9_binary_keypoints_3d/mh_01.json ~/data/processed_video/results_phq9_binary_1fps3d/train.json --subset train -k 1 --ignore
+#python -m util_scripts.eval_accuracy ~/data/processed_video/phq9_binary_keypoints_3d/mh_01.json ~/data/processed_video/results_phq9_binary_1fps3d/val.json --subset val -k 1 --ignore
+#python -m util_scripts.eval_accuracy ~/data/processed_video/phq9_binary_keypoints_3d/mh_01.json ~/data/processed_video/results_phq9_binary_1fps3d/test.json --subset test -k 1 --ignore
 
+### Multiclass PHQ9 ###
 #python -m util_scripts.eval_accuracy ~/data/processed_video/phq9_multiclass_keypoints_3d/mh_01.json ~/data/processed_video/results_phq9_multiclass_1fps3d/train.json --subset train -k 1 --ignore
 #python -m util_scripts.eval_accuracy ~/data/processed_video/phq9_multiclass_keypoints_3d/mh_01.json ~/data/processed_video/results_phq9_multiclass_1fps3d/val.json --subset val -k 1 --ignore
+#python -m util_scripts.eval_accuracy ~/data/processed_video/phq9_multiclass_keypoints_3d/mh_01.json ~/data/processed_video/results_phq9_multiclass_1fps3d/test.json --subset test -k 1 --ignore
+
+### Binary GAD7 ###
+python -m util_scripts.eval_accuracy ~/data/processed_video/gad7_binary_keypoints_3d/mh_01.json ~/data/processed_video/results_gad7_binary_1fps3d/train.json --subset train -k 1 --ignore
+python -m util_scripts.eval_accuracy ~/data/processed_video/gad7_binary_keypoints_3d/mh_01.json ~/data/processed_video/results_gad7_binary_1fps3d/val.json --subset val -k 1 --ignore
+python -m util_scripts.eval_accuracy ~/data/processed_video/gad7_binary_keypoints_3d/mh_01.json ~/data/processed_video/results_gad7_binary_1fps3d/test.json --subset test -k 1 --ignore
+
+
+### Multiclass GAD7 ###
+#python -m util_scripts.eval_accuracy ~/data/processed_video/gad7_multiclass_keypoints_3d/mh_01.json ~/data/processed_video/results_gad7_multiclass_1fps3d/train.json --subset train -k 1 --ignore
+#python -m util_scripts.eval_accuracy ~/data/processed_video/gad7_multiclass_keypoints_3d/mh_01.json ~/data/processed_video/results_gad7_multiclass_1fps3d/val.json --subset val -k 1 --ignore
+#python -m util_scripts.eval_accuracy ~/data/processed_video/gad7_multiclass_keypoints_3d/mh_01.json ~/data/processed_video/results_gad7_multiclass_1fps3d/test.json --subset test -k 1 --ignore
+
+
+
+#python -m util_scripts.eval_accuracy ~/data/processed_video/fa_binary_3d/mh_01.json ~/data/processed_video/results_phq9_binary_1fps3d_fa/train.json --subset train -k 1 --ignore
+#python -m util_scripts.eval_accuracy ~/data/processed_video/fa_binary_3d/mh_01.json ~/data/processed_video/results_phq9_binary_1fps3d_fa/val.json --subset val -k 1 --ignore
+
+#python -m util_scripts.eval_accuracy ~/data/processed_video/tmp_multiclass_3d/mh_01.json ~/data/processed_video/results_phq9_multiclass_1fps3d_tmp/train.json --subset train -k 1 --ignore
+#python -m util_scripts.eval_accuracy ~/data/processed_video/tmp_multiclass_3d/mh_01.json ~/data/processed_video/results_phq9_multiclass_1fps3d_tmp/val.json --subset val -k 1 --ignore
+
+#python -m util_scripts.eval_accuracy ~/data/processed_video/tmp_binary_3d/mh_01.json ~/data/processed_video/results_phq9_binary_1fps3d_tmp/train.json --subset train -k 1 --ignore
+#python -m util_scripts.eval_accuracy ~/data/processed_video/tmp_binary_3d/mh_01.json ~/data/processed_video/results_phq9_binary_1fps3d_tmp/val.json --subset val -k 1 --ignore
 
 #python -m util_scripts.eval_accuracy ~/data/daicwoz_1fps/daicwoz_binary_keypts_3d/mh_01.json ~/data/daicwoz_1fps/results_binary/train.json --subset train -k 1 --ignore
 #python -m util_scripts.eval_accuracy ~/data/daicwoz_1fps/daicwoz_binary_keypts_3d/mh_01.json ~/data/daicwoz_1fps/results_binary/val.json --subset val -k 1 --ignore

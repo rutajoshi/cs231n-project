@@ -16,8 +16,17 @@ class ImageEmbeddingsLoader(object):
         pieces = str(path).split("/")
         classname, videoname, filename = pieces[-3], pieces[-2], pieces[-1].split(".")[0]+".pt"
         
-        path = "/home/ubuntu/data/processed_video/phq9_binary_keypoints_3d/" + classname + "/" + videoname + "/" + filename
+        #path = "/home/ubuntu/data/processed_video/fa_binary_3d/" + classname + "/" + videoname + "/" + filename
+        #path = "/home/ubuntu/data/processed_video/fa_multiclass_3d/" + classname + "/" + videoname + "/" + filename
+        
+        #path = "/home/ubuntu/data/processed_video/tmp_binary_3d/" + classname + "/" + videoname + "/" + filename
+        #path = "/home/ubuntu/data/processed_video/tmp_multiclass_3d/" + classname + "/" + videoname + "/" + filename
+        
+        #path = "/home/ubuntu/data/processed_video/phq9_binary_keypoints_3d/" + classname + "/" + videoname + "/" + filename
         #path = "/home/ubuntu/data/processed_video/phq9_multiclass_keypoints_3d/" + classname + "/" + videoname + "/" + filename
+        
+        #path = "/home/ubuntu/data/processed_video/gad7_binary_keypoints_3d/" + classname + "/" + videoname + "/" + filename
+        path = "/home/ubuntu/data/processed_video/gad7_multiclass_keypoints_3d/" + classname + "/" + videoname + "/" + filename
         
         #path = "/home/ubuntu/data/daicwoz_1fps/daicwoz_binary_keypts_3d/" + classname + "/" + videoname + "/" + filename
         #path = "/home/ubuntu/data/daicwoz_1fps/daicwoz_multiclass_keypts_3d/" + classname + "/" + videoname + "/" + filename
@@ -35,6 +44,7 @@ class ImageEmbeddingsLoader(object):
         
         #img_embedding = torch.reshape(img_embedding, (1, 136)).type(torch.FloatTensor)
         img_embedding = torch.reshape(img_embedding, (1, 204)).type(torch.FloatTensor)
+        #print("img embedding shape = " + str(img_embedding.shape))
         return img_embedding
 
 class ImageLoaderPIL(object):

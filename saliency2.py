@@ -508,7 +508,8 @@ def plot_saliency_3d(sal_map, i, inputs, targets, opt):
         print("image names = " + str(image_names))
 
         #img_root_dir = "/home/ubuntu/data/processed_video/binary_data_embed"
-        kpt_root_dir = "/home/ubuntu/data/processed_video/phq9_binary_keypoints_3d"
+        #kpt_root_dir = "/home/ubuntu/data/processed_video/phq9_binary_keypoints_3d"
+        kpt_root_dir = "/home/ubuntu/data/processed_video/phq9_binary_keypoints"
         
         # For each element in targets, get the relevant image paths and keypoint paths
         # For each relevant image, get the saliency map
@@ -525,10 +526,10 @@ def plot_saliency_3d(sal_map, i, inputs, targets, opt):
 
                 # Get keypoints
                 keypoints = torch.load(kpt_path).detach()
-                keypoints = torch.reshape(keypoints, (68, 3)).type(torch.FloatTensor) 
+                keypoints = torch.reshape(keypoints, (68, 2)).type(torch.FloatTensor) 
                 keypoints = keypoints.numpy()
                 #print("keypoint shape = " + str(keypoints.shape))
-                print("keypoints = " + str(keypoints))
+                #print("keypoints = " + str(keypoints))
 
                 # Get saliency map
                 sals = avg_sal_map[i][j] # numpy array of length 204
@@ -537,14 +538,16 @@ def plot_saliency_3d(sal_map, i, inputs, targets, opt):
                 #print("sals shape = " + str(sals.shape))
 
                 # Plot 3D
-                fig = plt.figure()
-                ax = Axes3D(fig)
-                ax.scatter(keypoints[:,0], keypoints[:,1], keypoints[:,2], s=5)
+                #fig = plt.figure()
+                #ax = Axes3D(fig)
+                #ax.scatter(keypoints[:,0], keypoints[:,1], s=5)
 
+                # Plot 2D
                 #plt.subplot(2, len(image_names), j+1)
                 #left, top, right, bottom = face.left(), face.top(), face.right(), face.bottom()
-                #plt.scatter(keypoints[:,0], keypoints[:,1], s=5, c=sals, cmap=plt.cm.hot)
-                #plt.axis("off")
+                plt.figure()
+                plt.scatter(keypoints[:,0], -keypoints[:,1], s=5, c=sals, cmap=plt.cm.hot)
+                plt.axis("off")
 
                 figpath = Path('/home/ubuntu/data/processed_video/salmaps/bin_phq/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
                 plt.savefig(figpath)
