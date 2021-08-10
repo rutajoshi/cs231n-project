@@ -37,10 +37,10 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from focalloss import FocalLoss, compute_class_weight
 
-ACTION_NAMES = ["minimal", "mildLow", "modMedium", "severeHigh"]
-ACTION_DICT = {"minimal" : 0, "mildLow" : 1, "modMedium" : 2, "severeHigh" : 3}
-#ACTION_NAMES = ["minimal", "notable"]
-#ACTION_DICT = {"minimal" : 0, "notable" : 1}
+#ACTION_NAMES = ["minimal", "mildLow", "modMedium", "severeHigh"]
+#ACTION_DICT = {"minimal" : 0, "mildLow" : 1, "modMedium" : 2, "severeHigh" : 3}
+ACTION_NAMES = ["minimal", "notable"]
+ACTION_DICT = {"minimal" : 0, "notable" : 1}
 
 def json_serial(obj):
     if isinstance(obj, Path):
@@ -487,10 +487,15 @@ def plot_saliency_3d(sal_map, i, inputs, targets, opt):
         sal_map = np.expand_dims(sal_map, axis=1)[:,:,:-1,:] # remove 351st image
         sal_shape = sal_map.shape
         print("Sal shape = " + str(sal_shape)) # 13x1x350x204
-        sal_map = np.reshape(sal_map, (sal_shape[0], sal_shape[2]//5, 5, sal_shape[3])) # should be 13x70x5x204
+        #sal_map = np.reshape(sal_map, (sal_shape[0], sal_shape[2]//5, 5, sal_shape[3])) # should be 13x70x5x204
+        beginning = np.reshape(sal_map[:,:,:320, :], (sal_shape[0], 32, 10, sal_shape[3])) # 13x32x10x204
+        end = np.reshape(sal_map[:, :, 320:, :], (13, 30, 1, 204)) # 13x30x1x204
 
         # Average over each segment
-        avg_sal_map = np.mean(sal_map, axis=1) # 13x5x204
+        #avg_sal_map = np.mean(sal_map, axis=1) # 13x5x204
+        avg_sal_map = np.max(beginning, axis=1) #np.mean(beginning, axis=1) #13x10x204
+        end_avg = np.max(end, axis=1) #np.mean(end, axis=1) #13x1x204
+        avg_sal_map = np.concatenate((avg_sal_map, end_avg), axis=1) #13x11x204
 
         # 3. Convert targets into labels
         labels = []
@@ -501,8 +506,9 @@ def plot_saliency_3d(sal_map, i, inputs, targets, opt):
         y = torch.LongTensor(labels).to(opt.device)
         print("y shape = " + str(y.shape))
 
-        # For each video, find the 5 relevant images (img 0, 70, 140, 210, 280)
-        relevant_indices = [i * (sal_shape[2]//5) for i in range(5)]
+        # For each video, find the 11 relevant images (img [0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320])
+        #relevant_indices = [i * (sal_shape[2]//11) for i in range(11)]
+        relevant_indices = [i * 32 for i in range(11)]
         image_name_formatter = lambda x: f'image_{x:05d}.pt' #keypoint path
         image_names = [image_name_formatter(i) for i in relevant_indices]
         print("image names = " + str(image_names))
@@ -510,8 +516,8 @@ def plot_saliency_3d(sal_map, i, inputs, targets, opt):
         #img_root_dir = "/home/ubuntu/data/processed_video/binary_data_embed"
         #kpt_root_dir = "/home/ubuntu/data/processed_video/phq9_binary_keypoints_3d"
         
-        #kpt_root_dir = "/home/ubuntu/data/processed_video/gad7_binary_keypoints"
-        kpt_root_dir = "/home/ubuntu/data/processed_video/gad7_multiclass_keypoints"
+        kpt_root_dir = "/home/ubuntu/data/processed_video/gad7_binary_keypoints"
+        #kpt_root_dir = "/home/ubuntu/data/processed_video/gad7_multiclass_keypoints"
         #kpt_root_dir = "/home/ubuntu/data/processed_video/phq9_binary_keypoints"
         #kpt_root_dir = "/home/ubuntu/data/processed_video/phq9_multiclass_keypoints"
         
@@ -538,7 +544,7 @@ def plot_saliency_3d(sal_map, i, inputs, targets, opt):
                 # Get saliency map
                 sals = avg_sal_map[i][j] # numpy array of length 204
                 sals = np.reshape(sals, (68, 3))
-                sals = np.mean(sals, axis=1) # shape is (68,)
+                sals = np.mean(sals, axis=1) # shape is (68,) # average over RGB channels of the image
                 #print("sals shape = " + str(sals.shape))
 
                 # Plot 3D
@@ -553,10 +559,10 @@ def plot_saliency_3d(sal_map, i, inputs, targets, opt):
                 plt.scatter(keypoints[:,0], -keypoints[:,1], s=5, c=sals, cmap=plt.cm.hot)
                 plt.axis("off")
 
-                #figpath = Path('/home/ubuntu/data/processed_video/salmaps/bin_gad/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
-                figpath = Path('/home/ubuntu/data/processed_video/salmaps/mul_gad/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
-                #figpath = Path('/home/ubuntu/data/processed_video/salmaps/bin_phq/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
-                #figpath = Path('/home/ubuntu/data/processed_video/salmaps/mul_phq/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
+                figpath = Path('/home/ubuntu/data/processed_video/salmaps_max/bin_gad/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
+                #figpath = Path('/home/ubuntu/data/processed_video/salmaps_max/mul_gad/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
+                #figpath = Path('/home/ubuntu/data/processed_video/salmaps_max/bin_phq/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
+                #figpath = Path('/home/ubuntu/data/processed_video/salmaps_max/mul_phq/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
                 plt.savefig(figpath)
     return None
 
