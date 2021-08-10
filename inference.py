@@ -50,6 +50,7 @@ def inference(data_loader, model, result_path, class_names, no_average,
             outputs = model(inputs)
             outputs = F.softmax(outputs, dim=1).cpu()
 
+            print("outputs = " + str(outputs))
             print("OUTPUTS SIZE = " + str(outputs.size()))
 
             for j in range(outputs.size(0)):

@@ -55,7 +55,7 @@ python get_lastlayer_video.py --root_path ~/data/processed_video/ \
 	--result_path results_gad7_multiclass_1fps3d \
 	--dataset mh \
 	--n_classes 4 \
-	--resume_path results_gad7_multiclass_1fps3d/save_150.pth \
+	--resume_path results_gad7_multiclass_1fps3d/save_60.pth \
 	--model embednet \
 	--batch_size 16 \
 	--sample_duration 352 \

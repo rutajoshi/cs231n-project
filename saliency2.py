@@ -37,10 +37,10 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from focalloss import FocalLoss, compute_class_weight
 
-#ACTION_NAMES = ["minimal", "mildLow", "modMedium", "severeHigh"]
-#ACTION_DICT = {"minimal" : 0, "mildLow" : 1, "modMedium" : 2, "severeHigh" : 3}
-ACTION_NAMES = ["minimal", "notable"]
-ACTION_DICT = {"minimal" : 0, "notable" : 1}
+ACTION_NAMES = ["minimal", "mildLow", "modMedium", "severeHigh"]
+ACTION_DICT = {"minimal" : 0, "mildLow" : 1, "modMedium" : 2, "severeHigh" : 3}
+#ACTION_NAMES = ["minimal", "notable"]
+#ACTION_DICT = {"minimal" : 0, "notable" : 1}
 
 def json_serial(obj):
     if isinstance(obj, Path):
@@ -509,7 +509,11 @@ def plot_saliency_3d(sal_map, i, inputs, targets, opt):
 
         #img_root_dir = "/home/ubuntu/data/processed_video/binary_data_embed"
         #kpt_root_dir = "/home/ubuntu/data/processed_video/phq9_binary_keypoints_3d"
-        kpt_root_dir = "/home/ubuntu/data/processed_video/phq9_binary_keypoints"
+        
+        #kpt_root_dir = "/home/ubuntu/data/processed_video/gad7_binary_keypoints"
+        kpt_root_dir = "/home/ubuntu/data/processed_video/gad7_multiclass_keypoints"
+        #kpt_root_dir = "/home/ubuntu/data/processed_video/phq9_binary_keypoints"
+        #kpt_root_dir = "/home/ubuntu/data/processed_video/phq9_multiclass_keypoints"
         
         # For each element in targets, get the relevant image paths and keypoint paths
         # For each relevant image, get the saliency map
@@ -549,7 +553,10 @@ def plot_saliency_3d(sal_map, i, inputs, targets, opt):
                 plt.scatter(keypoints[:,0], -keypoints[:,1], s=5, c=sals, cmap=plt.cm.hot)
                 plt.axis("off")
 
-                figpath = Path('/home/ubuntu/data/processed_video/salmaps/bin_phq/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
+                #figpath = Path('/home/ubuntu/data/processed_video/salmaps/bin_gad/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
+                figpath = Path('/home/ubuntu/data/processed_video/salmaps/mul_gad/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
+                #figpath = Path('/home/ubuntu/data/processed_video/salmaps/bin_phq/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
+                #figpath = Path('/home/ubuntu/data/processed_video/salmaps/mul_phq/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
                 plt.savefig(figpath)
     return None
 

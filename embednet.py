@@ -27,10 +27,10 @@ class EmbedNet(nn.Module):
         embeds = self.fc(embeds)
         embeds = self.relu(embeds)
         embeds = self.dropout(embeds)
-        return embeds # for lastlayer
-        #out = self.fc2(embeds)
+        #return embeds # for lastlayer
+        out = self.fc2(embeds)
         #print("embednet output size = " + str(out.size()))
-        #return out
+        return out
 
     def train_forward(self, data, criterion, device=None):
         inputs, phq_buckets = data

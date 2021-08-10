@@ -5,14 +5,14 @@
 #python -m util_scripts.eval_accuracy ~/data/processed_video/phq9_binary_keypoints_3d/mh_01.json ~/data/processed_video/results_phq9_binary_1fps3d/test.json --subset test -k 1 --ignore
 
 ### Multiclass PHQ9 ###
-#python -m util_scripts.eval_accuracy ~/data/processed_video/phq9_multiclass_keypoints_3d/mh_01.json ~/data/processed_video/results_phq9_multiclass_1fps3d/train.json --subset train -k 1 --ignore
-#python -m util_scripts.eval_accuracy ~/data/processed_video/phq9_multiclass_keypoints_3d/mh_01.json ~/data/processed_video/results_phq9_multiclass_1fps3d/val.json --subset val -k 1 --ignore
+python -m util_scripts.eval_accuracy ~/data/processed_video/phq9_multiclass_keypoints_3d/mh_01.json ~/data/processed_video/results_phq9_multiclass_1fps3d/train.json --subset train -k 1 --ignore
+python -m util_scripts.eval_accuracy ~/data/processed_video/phq9_multiclass_keypoints_3d/mh_01.json ~/data/processed_video/results_phq9_multiclass_1fps3d/val.json --subset val -k 1 --ignore
 #python -m util_scripts.eval_accuracy ~/data/processed_video/phq9_multiclass_keypoints_3d/mh_01.json ~/data/processed_video/results_phq9_multiclass_1fps3d/test.json --subset test -k 1 --ignore
 
 ### Binary GAD7 ###
-python -m util_scripts.eval_accuracy ~/data/processed_video/gad7_binary_keypoints_3d/mh_01.json ~/data/processed_video/results_gad7_binary_1fps3d/train.json --subset train -k 1 --ignore
-python -m util_scripts.eval_accuracy ~/data/processed_video/gad7_binary_keypoints_3d/mh_01.json ~/data/processed_video/results_gad7_binary_1fps3d/val.json --subset val -k 1 --ignore
-python -m util_scripts.eval_accuracy ~/data/processed_video/gad7_binary_keypoints_3d/mh_01.json ~/data/processed_video/results_gad7_binary_1fps3d/test.json --subset test -k 1 --ignore
+#python -m util_scripts.eval_accuracy ~/data/processed_video/gad7_binary_keypoints_3d/mh_01.json ~/data/processed_video/results_gad7_binary_1fps3d/train.json --subset train -k 1 --ignore
+#python -m util_scripts.eval_accuracy ~/data/processed_video/gad7_binary_keypoints_3d/mh_01.json ~/data/processed_video/results_gad7_binary_1fps3d/val.json --subset val -k 1 --ignore
+#python -m util_scripts.eval_accuracy ~/data/processed_video/gad7_binary_keypoints_3d/mh_01.json ~/data/processed_video/results_gad7_binary_1fps3d/test.json --subset test -k 1 --ignore
 
 
 ### Multiclass GAD7 ###
