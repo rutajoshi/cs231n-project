@@ -37,10 +37,10 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from focalloss import FocalLoss, compute_class_weight
 
-#ACTION_NAMES = ["minimal", "mildLow", "modMedium", "severeHigh"]
-#ACTION_DICT = {"minimal" : 0, "mildLow" : 1, "modMedium" : 2, "severeHigh" : 3}
-ACTION_NAMES = ["minimal", "notable"]
-ACTION_DICT = {"minimal" : 0, "notable" : 1}
+ACTION_NAMES = ["minimal", "mildLow", "modMedium", "severeHigh"]
+ACTION_DICT = {"minimal" : 0, "mildLow" : 1, "modMedium" : 2, "severeHigh" : 3}
+#ACTION_NAMES = ["minimal", "notable"]
+#ACTION_DICT = {"minimal" : 0, "notable" : 1}
 
 def json_serial(obj):
     if isinstance(obj, Path):
@@ -479,6 +479,8 @@ def plot_saliency_3d(sal_map, i, inputs, targets, opt):
     with opt.annotation_path.open('r') as f:
         data = json.load(f)
 
+    per_question_saliencies = [[] for i in range(11)]
+
     with torch.no_grad():
         sal_map = sal_map.numpy()
         print("Original sal map shape = " + str(sal_map.shape))
@@ -516,8 +518,8 @@ def plot_saliency_3d(sal_map, i, inputs, targets, opt):
         #img_root_dir = "/home/ubuntu/data/processed_video/binary_data_embed"
         #kpt_root_dir = "/home/ubuntu/data/processed_video/phq9_binary_keypoints_3d"
         
-        kpt_root_dir = "/home/ubuntu/data/processed_video/gad7_binary_keypoints"
-        #kpt_root_dir = "/home/ubuntu/data/processed_video/gad7_multiclass_keypoints"
+        #kpt_root_dir = "/home/ubuntu/data/processed_video/gad7_binary_keypoints"
+        kpt_root_dir = "/home/ubuntu/data/processed_video/gad7_multiclass_keypoints"
         #kpt_root_dir = "/home/ubuntu/data/processed_video/phq9_binary_keypoints"
         #kpt_root_dir = "/home/ubuntu/data/processed_video/phq9_multiclass_keypoints"
         
@@ -547,6 +549,9 @@ def plot_saliency_3d(sal_map, i, inputs, targets, opt):
                 sals = np.mean(sals, axis=1) # shape is (68,) # average over RGB channels of the image
                 #print("sals shape = " + str(sals.shape))
 
+                # Add max keypoint saliency to the list of saliencies for this question
+                per_question_saliencies[j].append(max(sals))
+
                 # Plot 3D
                 #fig = plt.figure()
                 #ax = Axes3D(fig)
@@ -559,11 +564,16 @@ def plot_saliency_3d(sal_map, i, inputs, targets, opt):
                 plt.scatter(keypoints[:,0], -keypoints[:,1], s=5, c=sals, cmap=plt.cm.hot)
                 plt.axis("off")
 
-                figpath = Path('/home/ubuntu/data/processed_video/salmaps_max/bin_gad/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
-                #figpath = Path('/home/ubuntu/data/processed_video/salmaps_max/mul_gad/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
+                #figpath = Path('/home/ubuntu/data/processed_video/salmaps_max/bin_gad/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
+                figpath = Path('/home/ubuntu/data/processed_video/salmaps_max/mul_gad/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
                 #figpath = Path('/home/ubuntu/data/processed_video/salmaps_max/bin_phq/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
                 #figpath = Path('/home/ubuntu/data/processed_video/salmaps_max/mul_phq/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
                 plt.savefig(figpath)
+    
+    # Average saliencies over participants for per_question
+    per_question_saliencies = np.mean(np.array(per_question_saliencies), axis=1) # shape should be (11,)
+    print("\nPer-question saliencies for this model: \n" + repr(per_question_saliencies) + "\n\n")
+
     return None
 
 
