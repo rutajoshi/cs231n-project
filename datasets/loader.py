@@ -25,8 +25,8 @@ class ImageEmbeddingsLoader(object):
         #path = "/home/ubuntu/data/processed_video/phq9_binary_keypoints_3d/" + classname + "/" + videoname + "/" + filename
         #path = "/home/ubuntu/data/processed_video/phq9_multiclass_keypoints_3d/" + classname + "/" + videoname + "/" + filename
         
-        #path = "/home/ubuntu/data/processed_video/gad7_binary_keypoints_3d/" + classname + "/" + videoname + "/" + filename
-        path = "/home/ubuntu/data/processed_video/gad7_multiclass_keypoints_3d/" + classname + "/" + videoname + "/" + filename
+        path = "/home/ubuntu/data/processed_video/gad7_binary_keypoints_3d/" + classname + "/" + videoname + "/" + filename
+        #path = "/home/ubuntu/data/processed_video/gad7_multiclass_keypoints_3d/" + classname + "/" + videoname + "/" + filename
         
         #path = "/home/ubuntu/data/daicwoz_1fps/daicwoz_binary_keypts_3d/" + classname + "/" + videoname + "/" + filename
         #path = "/home/ubuntu/data/daicwoz_1fps/daicwoz_multiclass_keypts_3d/" + classname + "/" + videoname + "/" + filename

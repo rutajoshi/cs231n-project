@@ -37,10 +37,10 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from focalloss import FocalLoss, compute_class_weight
 
-ACTION_NAMES = ["minimal", "mildLow", "modMedium", "severeHigh"]
-ACTION_DICT = {"minimal" : 0, "mildLow" : 1, "modMedium" : 2, "severeHigh" : 3}
-#ACTION_NAMES = ["minimal", "notable"]
-#ACTION_DICT = {"minimal" : 0, "notable" : 1}
+#ACTION_NAMES = ["minimal", "mildLow", "modMedium", "severeHigh"]
+#ACTION_DICT = {"minimal" : 0, "mildLow" : 1, "modMedium" : 2, "severeHigh" : 3}
+ACTION_NAMES = ["minimal", "notable"]
+ACTION_DICT = {"minimal" : 0, "notable" : 1}
 
 def json_serial(obj):
     if isinstance(obj, Path):
@@ -493,10 +493,15 @@ def plot_saliency_3d(sal_map, i, inputs, targets, opt):
         beginning = np.reshape(sal_map[:,:,:320, :], (sal_shape[0], 32, 10, sal_shape[3])) # 13x32x10x204
         end = np.reshape(sal_map[:, :, 320:, :], (13, 30, 1, 204)) # 13x30x1x204
 
-        # Average over each segment
-        #avg_sal_map = np.mean(sal_map, axis=1) # 13x5x204
-        avg_sal_map = np.max(beginning, axis=1) #np.mean(beginning, axis=1) #13x10x204
-        end_avg = np.max(end, axis=1) #np.mean(end, axis=1) #13x1x204
+        # Average over each segment [MAX]
+        ##avg_sal_map = np.mean(sal_map, axis=1) # 13x5x204
+        #avg_sal_map = np.max(beginning, axis=1) #np.mean(beginning, axis=1) #13x10x204
+        #end_avg = np.max(end, axis=1) #np.mean(end, axis=1) #13x1x204
+        #avg_sal_map = np.concatenate((avg_sal_map, end_avg), axis=1) #13x11x204
+
+        # Average over each segment [MEAN]
+        avg_sal_map = np.mean(beginning, axis=1) #13x10x204
+        end_avg = np.mean(end, axis=1) #13x1x204
         avg_sal_map = np.concatenate((avg_sal_map, end_avg), axis=1) #13x11x204
 
         # 3. Convert targets into labels
@@ -518,8 +523,8 @@ def plot_saliency_3d(sal_map, i, inputs, targets, opt):
         #img_root_dir = "/home/ubuntu/data/processed_video/binary_data_embed"
         #kpt_root_dir = "/home/ubuntu/data/processed_video/phq9_binary_keypoints_3d"
         
-        #kpt_root_dir = "/home/ubuntu/data/processed_video/gad7_binary_keypoints"
-        kpt_root_dir = "/home/ubuntu/data/processed_video/gad7_multiclass_keypoints"
+        kpt_root_dir = "/home/ubuntu/data/processed_video/gad7_binary_keypoints"
+        #kpt_root_dir = "/home/ubuntu/data/processed_video/gad7_multiclass_keypoints"
         #kpt_root_dir = "/home/ubuntu/data/processed_video/phq9_binary_keypoints"
         #kpt_root_dir = "/home/ubuntu/data/processed_video/phq9_multiclass_keypoints"
         
@@ -557,6 +562,11 @@ def plot_saliency_3d(sal_map, i, inputs, targets, opt):
                 #ax = Axes3D(fig)
                 #ax.scatter(keypoints[:,0], keypoints[:,1], s=5)
 
+                np.save('/home/ubuntu/data/processed_video/salmaps_mean_nums/bin_gad/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".npy", sals)
+                #np.save('/home/ubuntu/data/processed_video/salmaps_mean_nums/mul_gad/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".npy", sals)
+                #np.save('/home/ubuntu/data/processed_video/salmaps_mean_nums/bin_phq/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".npy", sals)
+                #np.save('/home/ubuntu/data/processed_video/salmaps_mean_nums/mul_phq/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".npy", sals)
+
                 # Plot 2D
                 #plt.subplot(2, len(image_names), j+1)
                 #left, top, right, bottom = face.left(), face.top(), face.right(), face.bottom()
@@ -564,10 +574,10 @@ def plot_saliency_3d(sal_map, i, inputs, targets, opt):
                 plt.scatter(keypoints[:,0], -keypoints[:,1], s=5, c=sals, cmap=plt.cm.hot)
                 plt.axis("off")
 
-                #figpath = Path('/home/ubuntu/data/processed_video/salmaps_max/bin_gad/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
-                figpath = Path('/home/ubuntu/data/processed_video/salmaps_max/mul_gad/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
-                #figpath = Path('/home/ubuntu/data/processed_video/salmaps_max/bin_phq/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
-                #figpath = Path('/home/ubuntu/data/processed_video/salmaps_max/mul_phq/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
+                figpath = Path('/home/ubuntu/data/processed_video/salmaps_mean/bin_gad/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
+                #figpath = Path('/home/ubuntu/data/processed_video/salmaps_mean/mul_gad/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
+                #figpath = Path('/home/ubuntu/data/processed_video/salmaps_mean/bin_phq/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
+                #figpath = Path('/home/ubuntu/data/processed_video/salmaps_mean/mul_phq/map_' + classname + "_" + videoname + "_" + img_name.split(".")[0] + ".jpg")
                 plt.savefig(figpath)
     
     # Average saliencies over participants for per_question
