@@ -1,0 +1,16 @@
+python main.py --root_path /home/ubuntu/ruta/data \
+        --video_path binary_jpgs \
+        --annotation_path /home/ubuntu/ruta/labels/binary_labels/mh_01.json \
+        --result_path ../results/erus_binary \
+        --dataset erus \
+        --n_classes 2 \
+        --resume_path ../results/erus_binary/save_180.pth \
+        --model resnet \
+        --model_depth 101 \
+        --batch_size 50 \
+        --n_threads 4 \
+        --checkpoint 30 \
+        --inference \
+        --inference_subset test \
+        --no_train \
+        --no_val
